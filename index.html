@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura Coquetelaria — Gestão Financeira</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // =============================================
+  // 🔥 COLE AQUI SUAS CREDENCIAIS DO FIREBASE
+  // =============================================
+  const firebaseConfig = {
+    apiKey: "COLE_AQUI",
+    authDomain: "COLE_AQUI",
+    projectId: "COLE_AQUI",
+    storageBucket: "COLE_AQUI",
+    messagingSenderId: "COLE_AQUI",
+    appId: "COLE_AQUI"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const colRef = collection(db, "lancamentos");
+
+  window._db = db;
+  window._colRef = colRef;
+  window._addDoc = addDoc;
+  window._getDocs = getDocs;
+  window._deleteDoc = deleteDoc;
+  window._doc = doc;
+  window._onSnapshot = onSnapshot;
+  window._query = query;
+  window._orderBy = orderBy;
+  window._firebaseReady = true;
+
+  window.dispatchEvent(new Event("firebaseReady"));
+</script>
+
+<style>
+:root {
+  --teal: #2a8fa3;
+  --teal-dark: #1d6e7e;
+  --teal-light: #e0f4f8;
+  --teal-mid: #4ab0c6;
+  --gold: #c8952a;
+  --green: #1D9E75;
+  --green-light: #e1f5ee;
+  --red: #D85A30;
+  --red-light: #faece7;
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2430;
+  --bg4: #21262d;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── HEADER ── */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(13,17,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; gap: 16px;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo-icon {
+  width: 38px; height: 38px;
+  background: var(--teal);
+  clip-path: polygon(50% 0%,61% 18%,76% 12%,74% 28%,90% 35%,78% 46%,82% 62%,66% 60%,60% 76%,50% 65%,40% 76%,34% 60%,18% 62%,22% 46%,10% 35%,26% 28%,24% 12%,39% 18%);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-icon svg { width: 20px; height: 20px; }
+.logo-name { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-name .brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--text);
+}
+.logo-name .brand span { color: var(--teal); }
+.logo-name .sub { font-size: 11px; color: var(--text2); letter-spacing: 0.02em; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.save-status { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.btn {
+  border: 1px solid var(--border2); background: transparent; color: var(--text2);
+  padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s;
+}
+.btn:hover { border-color: var(--teal); color: var(--teal); }
+.btn-primary {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+  display: flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); color: #fff; }
+
+/* ── MAIN ── */
+.main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  background: var(--bg2); border: 1px solid var(--border);
+  margin-bottom: 1.5rem; font-size: 13px; color: var(--text2);
+  flex-wrap: wrap; gap: 8px;
+}
+.status-bar .online { color: var(--green); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.kpi-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative; overflow: hidden;
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent, var(--teal)), transparent);
+}
+.kpi-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.kpi-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text2); margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--text);
+}
+.kpi-value.green { color: var(--green); }
+.kpi-value.red { color: var(--red); }
+.kpi-value.teal { color: var(--teal); }
+.kpi-value.gold { color: var(--gold); }
+
+/* ── FILTERS ── */
+.filters-bar {
+  display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: flex-end;
+  padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3);
+}
+.filter-group input,
+.filter-group select {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.filter-group input:focus,
+.filter-group select:focus { border-color: var(--teal); }
+.filter-group select option { background: var(--bg3); }
+.btn-clear {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text2); padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; cursor: pointer; align-self: flex-end; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+/* ── CHARTS ROW ── */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.chart-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.chart-title {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text2); margin-bottom: 16px;
+}
+
+/* ── PIE ROW ── */
+.pie-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.pie-inner { display: flex; align-items: center; gap: 20px; }
+.pie-legend { display: flex; flex-direction: column; gap: 7px; flex: 1; }
+.pie-legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
+.pie-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── PARTICIPATION BARS ── */
+.part-item { margin-bottom: 10px; }
+.part-header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
+.part-name { color: var(--text2); }
+.part-pct { color: var(--text); font-weight: 500; }
+.part-track { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.part-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+/* ── INSIGHTS ── */
+.insights-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
+}
+.insights-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 12px; }
+.insight-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+}
+.insight-tag {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--teal); margin-bottom: 6px;
+}
+.insight-val { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.insight-desc { font-size: 12px; color: var(--text2); }
+
+/* ── TABLE ── */
+.table-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; overflow: hidden;
+}
+.table-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+}
+.tab-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.tab-btn {
+  background: transparent; border: 1px solid var(--border); color: var(--text2);
+  padding: 5px 11px; border-radius: 20px; font-size: 11px; cursor: pointer;
+  transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.tab-btn:hover { border-color: var(--teal); color: var(--teal); }
+.tab-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left; padding: 9px 12px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text3); font-weight: 400;
+  border-bottom: 1px solid var(--border);
+}
+tbody td {
+  padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text); vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+.badge {
+  display: inline-block; padding: 2px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+.badge-receita { background: rgba(29,158,117,0.15); color: #4ecba0; }
+.badge-despesa { background: rgba(216,90,48,0.15); color: #f0895c; }
+.val-receita { color: var(--green); font-weight: 500; }
+.val-despesa { color: var(--red); font-weight: 500; }
+
+.btn-delete {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 16px; padding: 2px 6px;
+  border-radius: 4px; transition: all 0.15s; line-height: 1;
+}
+.btn-delete:hover { color: var(--red); background: rgba(216,90,48,0.1); }
+
+/* ── LOADING ── */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem; color: var(--text2); gap: 10px; font-size: 14px;
+}
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+  z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 28px;
+  width: min(520px, 94vw); max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 600; color: var(--text);
+  margin-bottom: 20px;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 9px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus { border-color: var(--teal); }
+.form-group select option { background: var(--bg3); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 3rem; color: var(--text3); font-size: 14px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 20px; border-radius: var(--radius-sm);
+  font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  transform: translateY(100px); opacity: 0; transition: all 0.3s ease;
+}
+.toast.show { transform: none; opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(3,1fr); }
+  .insights-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 800px) {
+  .main { padding: 1rem; }
+  .header { padding: 0 1rem; }
+  .charts-row, .pie-row { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .insights-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="12,3 21,20 3,20" fill="none" stroke="rgba(0,0,0,0.85)" stroke-width="2.2" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="logo-name">
+      <div class="brand"><span>Aura</span> Coquetelaria</div>
+      <div class="sub">Inteligência por trás do balcão</div>
+    </div>
+  </a>
+  <div class="header-right">
+    <div class="save-status" id="save-status">
+      <span class="save-dot"></span>
+      <span id="save-text">Conectando...</span>
+    </div>
+    <button class="btn-primary btn" onclick="openModal()">+ Novo Lançamento</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="status-bar">
+    <span id="status-msg" class="online">
+      <span class="save-dot"></span> Dados sincronizados em tempo real via Firebase
+    </span>
+    <span id="last-update" style="font-size:12px;color:var(--text3);">—</span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="loading" style="grid-column:1/-1;"><div class="spinner"></div> Carregando dados...</div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>De</label>
+      <input type="date" id="f-from" onchange="applyFilters()">
+    </div>
+    <div class="filter-group">
+      <label>Até</label>
+      <input type="date" id="f-to" onchange="applyFilters()">
+    </div>
+    <div class="filter-group">
+      <label>Tipo</label>
+      <select id="f-tipo" onchange="applyFilters()">
+        <option value="">Todos</option>
+        <option value="Receita">Receita</option>
+        <option value="Despesa">Despesa</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Categoria</label>
+      <select id="f-cat" onchange="applyFilters()">
+        <option value="">Todas</option>
+        <option value="Insumos">Insumos</option>
+        <option value="Manutenção">Manutenção</option>
+        <option value="Mão de obra">Mão de obra</option>
+        <option value="Compras operacionais">Compras operacionais</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Outras despesas">Outras despesas</option>
+        <option value="Eventos Privados">Eventos Privados</option>
+      </select>
+    </div>
+    <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Receita × Despesa por mês</div>
+      <div style="position:relative;height:220px;"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolução do resultado líquido</div>
+      <div style="position:relative;height:220px;"><canvas id="lineChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="pie-row">
+    <div class="chart-card">
+      <div class="chart-title">Despesas por categoria</div>
+      <div class="pie-inner">
+        <div style="position:relative;height:180px;width:180px;flex-shrink:0;"><canvas id="pieChart"></canvas></div>
+        <div class="pie-legend" id="pie-legend"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Participação das despesas</div>
+      <div id="participation-bars" style="padding-top:4px;"></div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="insights-card">
+    <div class="chart-title">Insights de operação</div>
+    <div class="insights-grid" id="insights-grid"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="chart-title" style="margin:0;">Lançamentos</div>
+      <div class="tab-row" id="tab-row">
+        <button class="tab-btn active" onclick="filterTab('all',this)">Todos</button>
+        <button class="tab-btn" onclick="filterTab('Insumos',this)">Insumos</button>
+        <button class="tab-btn" onclick="filterTab('Manutenção',this)">Manutenção</button>
+        <button class="tab-btn" onclick="filterTab('Mão de obra',this)">Mão de obra</button>
+        <button class="tab-btn" onclick="filterTab('Compras operacionais',this)">Compras op.</button>
+        <button class="tab-btn" onclick="filterTab('Marketing',this)">Marketing</button>
+        <button class="tab-btn" onclick="filterTab('Outras despesas',this)">Outras</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Tipo</th><th>Categoria</th><th>Subcategoria</th>
+          <th>Descrição</th><th>Valor</th><th>Pagamento</th><th>Obs.</th><th></th>
+        </tr></thead>
+        <tbody id="table-body">
+          <tr><td colspan="9"><div class="loading"><div class="spinner"></div> Carregando...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">Novo Lançamento</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="m-data">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="m-tipo" onchange="updateFormCats()">
+          <option value="Despesa">Despesa</option>
+          <option value="Receita">Receita</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="m-cat" onchange="updateFormSubcats()"></select>
+      </div>
+      <div class="form-group">
+        <label>Subcategoria</label>
+        <select id="m-subcat"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Descrição</label>
+        <input type="text" id="m-desc" placeholder="Descreva o lançamento...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="m-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Forma de pagamento</label>
+        <select id="m-pag">
+          <option>PIX</option><option>Dinheiro</option>
+          <option>Cartão crédito</option><option>Cartão débito</option>
+          <option>Transferência</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Observações</label>
+        <input type="text" id="m-obs" placeholder="Opcional...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary btn" onclick="addLancamento()" id="btn-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ────────────────────────────────
+   DATA & STATE
+──────────────────────────────── */
+const subcatsMap = {
+  'Insumos':              ['Destilados','Gelo','Guarnições','Outros','Xaropes'],
+  'Manutenção':           ['Equipamentos','Estrutura'],
+  'Mão de obra':          ['Encargos','Freelancers','Outros'],
+  'Compras operacionais': ['Copos','Descartáveis','Outros','Utensílios'],
+  'Marketing':            ['Eventos','Impresso','Outros'],
+  'Outras despesas':      ['Outros'],
+  'Eventos Privados':     ['Acerto','Entrada','Outros','Quitação']
+};
+
+const SEED_DATA = [
+  {data:'2026-03-16',tipo:'Despesa',cat:'Marketing',sub:'Impresso',desc:'Presskits',valor:-846.40,pag:'PIX',obs:'Valor de entrada'},
+  {data:'2026-03-12',tipo:'Receita',cat:'Eventos Privados',sub:'Acerto',desc:'Acerto Final Evento Março',valor:2000,pag:'PIX',obs:'Pago por Ana'},
+  {data:'2026-03-11',tipo:'Despesa',cat:'Insumos',sub:'Gelo',desc:'Gelo',valor:-315,pag:'PIX',obs:''},
+  {data:'2026-03-11',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Acerto de Produção de Evento',valor:-8175,pag:'PIX',obs:'Pendente 19'},
+  {data:'2026-03-11',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Extra Produção Bonga',valor:-200,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Receita',cat:'Eventos Privados',sub:'Quitação',desc:'Quitação Evento Med UFMG',valor:700,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Microfone',valor:-67.90,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers Evento Maior',valor:-1800,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-50,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Marketing',sub:'Eventos',desc:'Videomaker',valor:-220,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Compras operacionais',sub:'Outros',desc:'Compras Gabi',valor:-1200,pag:'PIX',obs:''},
+  {data:'2026-03-09',tipo:'Despesa',cat:'Marketing',sub:'Outros',desc:'Presente Iara',valor:-190,pag:'PIX',obs:''},
+  {data:'2026-03-08',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Combustível Marcio',valor:-200,pag:'PIX',obs:''},
+  {data:'2026-03-06',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Chapa',valor:-30,pag:'PIX',obs:''},
+  {data:'2026-03-06',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Bordados',valor:-560,pag:'PIX',obs:''},
+  {data:'2026-03-06',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-50,pag:'PIX',obs:''},
+  {data:'2026-03-05',tipo:'Receita',cat:'Eventos Privados',sub:'Outros',desc:'Evento Marcelo e Anderson',valor:14000,pag:'PIX',obs:''},
+  {data:'2026-03-05',tipo:'Despesa',cat:'Compras operacionais',sub:'Copos',desc:'Copos',valor:-1057,pag:'PIX',obs:''},
+  {data:'2026-03-05',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-50,pag:'PIX',obs:''},
+  {data:'2026-03-04',tipo:'Despesa',cat:'Compras operacionais',sub:'Copos',desc:'Copos NDI',valor:-1060.47,pag:'PIX',obs:'NDI'},
+  {data:'2026-03-03',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Compra de Camisas Sociais',valor:-239.60,pag:'PIX',obs:''},
+  {data:'2026-03-03',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers Evento',valor:-700,pag:'PIX',obs:'Freelas: Nana'},
+  {data:'2026-02-28',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Guarnições',valor:-30,pag:'PIX',obs:''},
+  {data:'2026-02-26',tipo:'Receita',cat:'Eventos Privados',sub:'Outros',desc:'Evento T40 MED',valor:3500,pag:'PIX',obs:''},
+  {data:'2026-02-10',tipo:'Receita',cat:'Eventos Privados',sub:'Entrada',desc:'Entrada Casamento Frederico',valor:2565,pag:'PIX',obs:''},
+  {data:'2026-02-06',tipo:'Receita',cat:'Eventos Privados',sub:'Entrada',desc:'Entrada Casamento Luiz',valor:2160,pag:'PIX',obs:''},
+  {data:'2026-02-06',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Tecidos para uniformes',valor:-252.51,pag:'PIX',obs:''},
+  {data:'2026-02-06',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Acerto de Produções',valor:-2100,pag:'PIX',obs:''},
+  {data:'2026-02-04',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Extra Degustação',valor:-50,pag:'PIX',obs:'Extra Winny'},
+  {data:'2026-02-02',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelas Evento',valor:-530,pag:'PIX',obs:''},
+  {data:'2026-02-02',tipo:'Despesa',cat:'Marketing',sub:'Impresso',desc:'Adesivo rótulos garrafas',valor:-89.12,pag:'PIX',obs:''},
+  {data:'2026-01-29',tipo:'Despesa',cat:'Outras despesas',sub:'Outros',desc:'Lanche Funcionários',valor:-64.50,pag:'PIX',obs:''},
+  {data:'2026-01-29',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Insumos e guarnições',valor:-127,pag:'PIX',obs:''},
+  {data:'2026-01-29',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Limão Siciliano',valor:-21.66,pag:'PIX',obs:''},
+  {data:'2026-01-29',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Guarnições',valor:-23,pag:'PIX',obs:''},
+  {data:'2026-01-27',tipo:'Despesa',cat:'Manutenção',sub:'Estrutura',desc:'Manutenção CO2',valor:-320,pag:'PIX',obs:''},
+  {data:'2026-01-20',tipo:'Receita',cat:'Eventos Privados',sub:'Outros',desc:'Casamento Luis Felipe',valor:1800,pag:'PIX',obs:''},
+  {data:'2026-01-16',tipo:'Receita',cat:'Eventos Privados',sub:'Entrada',desc:'Entrada Casamento Giovanna',valor:2250,pag:'PIX',obs:''},
+  {data:'2026-01-16',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Ajustes uniformes',valor:-20,pag:'PIX',obs:''},
+  {data:'2026-01-16',tipo:'Despesa',cat:'Insumos',sub:'Gelo',desc:'Gelos',valor:-75,pag:'PIX',obs:''},
+  {data:'2026-01-13',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers',valor:-650,pag:'PIX',obs:''},
+  {data:'2026-01-12',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Guarnições e Insumos',valor:-149.59,pag:'PIX',obs:''},
+  {data:'2026-01-12',tipo:'Despesa',cat:'Compras operacionais',sub:'Descartáveis',desc:'Pilhas',valor:-65,pag:'PIX',obs:''},
+  {data:'2026-01-08',tipo:'Despesa',cat:'Insumos',sub:'Destilados',desc:'Compra Amaretto',valor:-89.90,pag:'PIX',obs:''},
+  {data:'2026-01-06',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Acerto de Produção Evento',valor:-3206.74,pag:'PIX',obs:''},
+  {data:'2026-01-06',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Bombonas',valor:-135.20,pag:'PIX',obs:''},
+  {data:'2026-01-05',tipo:'Receita',cat:'Eventos Privados',sub:'Acerto',desc:'Acerto Evento Luan',valor:3500,pag:'PIX',obs:''},
+  {data:'2026-01-05',tipo:'Receita',cat:'Eventos Privados',sub:'Acerto',desc:'Acerto Quebras Evento',valor:620,pag:'PIX',obs:''},
+  {data:'2026-01-03',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Tábua Shot',valor:-74.83,pag:'PIX',obs:''},
+  {data:'2025-12-23',tipo:'Despesa',cat:'Insumos',sub:'Gelo',desc:'Gelos para Evento',valor:-270,pag:'PIX',obs:''},
+  {data:'2025-12-22',tipo:'Despesa',cat:'Manutenção',sub:'Estrutura',desc:'Balcões Coquetelaria',valor:-1207.73,pag:'PIX',obs:''},
+  {data:'2025-12-22',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers Evento',valor:-600,pag:'PIX',obs:''},
+  {data:'2025-12-20',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Guarnições para Evento',valor:-56,pag:'PIX',obs:''},
+  {data:'2025-12-19',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Bordados e Tecidos',valor:-420,pag:'PIX',obs:''},
+  {data:'2025-12-19',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-30,pag:'PIX',obs:''},
+  {data:'2025-12-18',tipo:'Despesa',cat:'Marketing',sub:'Impresso',desc:'Crachás (valor restante)',valor:-83.44,pag:'PIX',obs:''},
+  {data:'2025-12-18',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Bombonas',valor:-169,pag:'PIX',obs:''},
+  {data:'2025-12-17',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Manutenção Uniformes',valor:-35,pag:'PIX',obs:''},
+  {data:'2025-12-16',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Tecidos',valor:-285.59,pag:'PIX',obs:''},
+  {data:'2025-12-16',tipo:'Receita',cat:'Eventos Privados',sub:'Outros',desc:'Recebimento Evento 20/12',valor:3850,pag:'PIX',obs:''},
+  {data:'2025-12-15',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Compras Armarinho Lili',valor:-67.60,pag:'PIX',obs:''},
+  {data:'2025-12-12',tipo:'Receita',cat:'Eventos Privados',sub:'Outros',desc:'Pagamento Restante Evento',valor:900,pag:'PIX',obs:''},
+  {data:'2025-12-12',tipo:'Despesa',cat:'Marketing',sub:'Impresso',desc:'Crachás (Entrada)',valor:-125.16,pag:'PIX',obs:''},
+  {data:'2025-12-12',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers Evento',valor:-660,pag:'PIX',obs:''},
+  {data:'2025-12-11',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Alfaiataria',valor:-30,pag:'PIX',obs:''},
+  {data:'2025-12-11',tipo:'Despesa',cat:'Outras despesas',sub:'Outros',desc:'Moto Uber',valor:-13.40,pag:'PIX',obs:''},
+  {data:'2025-12-11',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Caixas de Isopor',valor:-174.57,pag:'PIX',obs:'3 unidades'},
+  {data:'2025-12-11',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Fretes',valor:-100,pag:'PIX',obs:''},
+  {data:'2025-12-10',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Alfaiataria',valor:-350,pag:'PIX',obs:''},
+  {data:'2025-12-10',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Bordados dos uniformes',valor:-44,pag:'PIX',obs:''},
+  {data:'2025-12-10',tipo:'Despesa',cat:'Marketing',sub:'Impresso',desc:'Papelaria',valor:-10,pag:'PIX',obs:''},
+  {data:'2025-12-10',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Caixa térmica',valor:-70,pag:'PIX',obs:''},
+  {data:'2025-12-09',tipo:'Despesa',cat:'Outras despesas',sub:'Outros',desc:'Estacionamento',valor:-10,pag:'PIX',obs:''},
+  {data:'2025-12-05',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Tecidos Uniforme',valor:-241.21,pag:'PIX',obs:''},
+  {data:'2025-12-05',tipo:'Despesa',cat:'Marketing',sub:'Eventos',desc:'Almoço Parceria SIM',valor:-244.75,pag:'PIX',obs:''},
+  {data:'2025-12-05',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'3 camisas sociais',valor:-492.85,pag:'PIX',obs:''},
+  {data:'2025-11-25',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Parcela Pedra',valor:-333.34,pag:'PIX',obs:'última parcela'},
+  {data:'2025-11-24',tipo:'Despesa',cat:'Mão de obra',sub:'Encargos',desc:'Comissão Marçal',valor:-190,pag:'PIX',obs:''},
+  {data:'2025-11-20',tipo:'Despesa',cat:'Manutenção',sub:'Estrutura',desc:'Decoração coquetelaria',valor:-100,pag:'PIX',obs:''},
+  {data:'2025-11-20',tipo:'Despesa',cat:'Manutenção',sub:'Estrutura',desc:'Compra Balcão',valor:-1207.73,pag:'PIX',obs:''},
+  {data:'2025-11-19',tipo:'Despesa',cat:'Insumos',sub:'Xaropes',desc:'Compras de Monins',valor:-1197.60,pag:'PIX',obs:''},
+  {data:'2025-11-17',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-120,pag:'PIX',obs:''},
+  {data:'2025-11-17',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancer produção',valor:-80,pag:'PIX',obs:''},
+  {data:'2025-11-15',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Insumos',valor:-37.86,pag:'PIX',obs:''},
+  {data:'2025-11-10',tipo:'Despesa',cat:'Marketing',sub:'Outros',desc:'Jantar Davi',valor:-290,pag:'PIX',obs:''},
+  {data:'2025-11-05',tipo:'Despesa',cat:'Outras despesas',sub:'Outros',desc:'Aluguel estrutura',valor:-250,pag:'PIX',obs:''},
+  {data:'2025-11-03',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Evento Marcelo Dickerson',valor:-868,pag:'PIX',obs:''},
+  {data:'2025-10-25',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Pedras decorativas',valor:-333.34,pag:'PIX',obs:'Parcela 2'},
+  {data:'2025-10-25',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete evento Nayara',valor:-100,pag:'PIX',obs:''},
+  {data:'2025-10-23',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Custos Evento Nayara',valor:-700,pag:'PIX',obs:''},
+  {data:'2025-10-20',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Balcões',valor:-1207.73,pag:'PIX',obs:'1ª parcela'},
+  {data:'2025-10-20',tipo:'Despesa',cat:'Marketing',sub:'Eventos',desc:'Estrutura Casando Minas',valor:-250,pag:'PIX',obs:''},
+  {data:'2025-10-16',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers',valor:-240,pag:'PIX',obs:''},
+  {data:'2025-10-10',tipo:'Despesa',cat:'Mão de obra',sub:'Outros',desc:'Frete',valor:-100,pag:'PIX',obs:''},
+  {data:'2025-10-08',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Insumos',valor:-6.24,pag:'PIX',obs:''},
+  {data:'2025-10-06',tipo:'Despesa',cat:'Marketing',sub:'Eventos',desc:'Evento Casando Minas',valor:-2988,pag:'PIX',obs:''},
+  {data:'2025-10-03',tipo:'Despesa',cat:'Outras despesas',sub:'Outros',desc:'Consultoria',valor:-700,pag:'PIX',obs:''},
+  {data:'2025-10-01',tipo:'Despesa',cat:'Insumos',sub:'Guarnições',desc:'Insumos',valor:-150,pag:'PIX',obs:''},
+  {data:'2025-10-01',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Ajustes uniformes',valor:-35,pag:'PIX',obs:''},
+  {data:'2025-09-30',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Uniformes',valor:-533,pag:'PIX',obs:''},
+  {data:'2025-09-30',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Insumos e produções',valor:-1832.52,pag:'PIX',obs:'Casando Minas'},
+  {data:'2025-09-30',tipo:'Despesa',cat:'Mão de obra',sub:'Freelancers',desc:'Freelancers',valor:-270,pag:'PIX',obs:''},
+  {data:'2025-09-29',tipo:'Despesa',cat:'Manutenção',sub:'Estrutura',desc:'Pedras decorativas',valor:-333.34,pag:'PIX',obs:''},
+  {data:'2025-09-29',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Equipamentos',valor:-744.78,pag:'PIX',obs:''},
+  {data:'2025-09-29',tipo:'Despesa',cat:'Compras operacionais',sub:'Copos',desc:'Canecas Mules',valor:-379.06,pag:'PIX',obs:''},
+  {data:'2025-09-29',tipo:'Despesa',cat:'Compras operacionais',sub:'Utensílios',desc:'Equipamentos',valor:-527.37,pag:'PIX',obs:''},
+  {data:'2025-09-29',tipo:'Despesa',cat:'Marketing',sub:'Eventos',desc:'Videomaker',valor:-150,pag:'PIX',obs:''},
+  {data:'2025-09-27',tipo:'Despesa',cat:'Insumos',sub:'Outros',desc:'Produção',valor:-80,pag:'PIX',obs:''},
+  {data:'2025-09-27',tipo:'Despesa',cat:'Manutenção',sub:'Equipamentos',desc:'Gravatas',valor:-60,pag:'PIX',obs:''},
+  {data:'2025-09-25',tipo:'Despesa',cat:'Compras operacionais',sub:'Copos',desc:'Copos',valor:-263.52,pag:'PIX',obs:''},
+];
+
+let allData = [];
+let filteredData = [];
+let activeTab = 'all';
+let barChartInst, lineChartInst, pieChartInst;
+const CAT_COLORS = ['#2a8fa3','#7c5cbf','#D85A30','#c8952a','#1D9E75','#888','#e05a9a'];
+
+/* ── UTILS ── */
+function fmt(v) {
+  return 'R$ ' + Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function getMonthKey(d) {
+  const dt = new Date(d+'T00:00:00');
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
+}
+function getMonthLabel(k) {
+  const [y,m] = k.split('-');
+  const ns = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return ns[parseInt(m)-1]+(y!=='2026'?'/'+y.slice(2):'');
+}
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type+' show';
+  setTimeout(()=>t.className='toast',3000);
+}
+
+/* ── FIREBASE INTEGRATION ── */
+let fbReady = false;
+window.addEventListener('firebaseReady', async () => {
+  fbReady = true;
+  document.getElementById('save-text').textContent = 'Firebase conectado';
+  await loadFromFirebase();
+});
+setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
+
+async function loadFromFirebase() {
+  try {
+    const snap = await window._getDocs(window._colRef);
+    if(snap.empty) {
+      await seedFirebase();
+    } else {
+      allData = snap.docs.map(d=>({id:d.id,...d.data()}));
+      allData.sort((a,b)=>b.data.localeCompare(a.data));
+      filteredData = [...allData];
+      renderAll(filteredData);
+      document.getElementById('save-text').textContent = 'Dados carregados';
+      document.getElementById('last-update').textContent =
+        'Atualizado: ' + new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Erro Firebase — usando dados locais', 'error');
+    loadFallback();
+  }
+}
+
+async function seedFirebase() {
+  showToast('Importando dados históricos...', 'success');
+  for(const item of SEED_DATA) {
+    await window._addDoc(window._colRef, item);
+  }
+  await loadFromFirebase();
+}
+
+function loadFallback() {
+  allData = SEED_DATA.map((d,i)=>({...d, id:'local-'+i}));
+  allData.sort((a,b)=>b.data.localeCompare(a.data));
+  filteredData = [...allData];
+  renderAll(filteredData);
+  document.getElementById('save-text').textContent = 'Modo offline';
+  document.getElementById('status-msg').innerHTML =
+    '<span style="color:var(--gold)">⚠ Configure o Firebase para sincronização em tempo real</span>';
+}
+
+/* ── RENDER KPIs ── */
+function renderKPIs(data) {
+  const rec = data.filter(d=>d.tipo==='Receita').reduce((s,d)=>s+d.valor,0);
+  const desp = data.filter(d=>d.tipo==='Despesa').reduce((s,d)=>s+Math.abs(d.valor),0);
+  const res = rec-desp;
+  const ins = data.filter(d=>d.cat==='Insumos').reduce((s,d)=>s+Math.abs(d.valor),0);
+  const mdo = data.filter(d=>d.cat==='Mão de obra').reduce((s,d)=>s+Math.abs(d.valor),0);
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card" style="--accent:var(--green)">
+      <div class="kpi-label">Receita total</div>
+      <div class="kpi-value green">${fmt(rec)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--red)">
+      <div class="kpi-label">Despesa total</div>
+      <div class="kpi-value red">${fmt(desp)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:${res>=0?'var(--green)':'var(--red)'}">
+      <div class="kpi-label">Resultado líquido</div>
+      <div class="kpi-value ${res>=0?'green':'red'}">${res<0?'− ':''} ${fmt(res)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--teal)">
+      <div class="kpi-label">Total insumos</div>
+      <div class="kpi-value teal">${fmt(ins)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--teal)">
+      <div class="kpi-label">Total mão de obra</div>
+      <div class="kpi-value teal">${fmt(mdo)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--text3)">
+      <div class="kpi-label">Total desperdícios</div>
+      <div class="kpi-value" style="color:var(--text2)">R$ 0,00</div>
+    </div>
+  `;
+}
+
+/* ── RENDER CHARTS ── */
+function getMonthly(data) {
+  const m={};
+  data.forEach(d=>{
+    const k=getMonthKey(d.data);
+    if(!m[k]) m[k]={rec:0,desp:0};
+    if(d.tipo==='Receita') m[k].rec+=d.valor; else m[k].desp+=Math.abs(d.valor);
+  });
+  const keys=Object.keys(m).sort();
+  return {keys,m};
+}
+
+function renderBarChart(data) {
+  const {keys,m}=getMonthly(data);
+  if(barChartInst) barChartInst.destroy();
+  barChartInst=new Chart(document.getElementById('barChart'),{
+    type:'bar',
+    data:{labels:keys.map(getMonthLabel),datasets:[
+      {label:'Receita',data:keys.map(k=>m[k].rec),backgroundColor:'#1D9E75',borderRadius:4,borderSkipped:false},
+      {label:'Despesa',data:keys.map(k=>m[k].desp),backgroundColor:'#D85A30',borderRadius:4,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}},
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:11},autoSkip:false,maxRotation:45},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}},
+        y:{ticks:{color:'#8b949e',font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'k':v},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}}
+      }
+    }
+  });
+}
+
+function renderLineChart(data) {
+  const {keys,m}=getMonthly(data);
+  if(lineChartInst) lineChartInst.destroy();
+  lineChartInst=new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{labels:keys.map(getMonthLabel),datasets:[{
+      label:'Resultado',data:keys.map(k=>Math.round(m[k].rec-m[k].desp)),
+      borderColor:'#c8952a',backgroundColor:'rgba(200,149,42,0.08)',
+      tension:0.4,pointRadius:4,pointBackgroundColor:'#c8952a',fill:true,borderWidth:2
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Resultado: '+fmt(ctx.raw)}}},
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:11},autoSkip:false,maxRotation:45},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}},
+        y:{ticks:{color:'#8b949e',font:{size:11},callback:v=>(Math.abs(v)>=1000?(v<0?'-':'')+Math.round(Math.abs(v)/1000)+'k':v)},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}}
+      }
+    }
+  });
+}
+
+function renderPieChart(data) {
+  const cats={};
+  data.filter(d=>d.tipo==='Despesa').forEach(d=>{ cats[d.cat]=(cats[d.cat]||0)+Math.abs(d.valor); });
+  const labels=Object.keys(cats); const vals=labels.map(l=>cats[l]);
+  const total=vals.reduce((s,v)=>s+v,0);
+  if(pieChartInst) pieChartInst.destroy();
+  pieChartInst=new Chart(document.getElementById('pieChart'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:CAT_COLORS,borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' ('+((ctx.raw/total)*100).toFixed(1)+')%'}}},
+      cutout:'68%'
+    }
+  });
+  document.getElementById('pie-legend').innerHTML=
+    labels.map((l,i)=>`<div class="pie-legend-item"><span class="pie-dot" style="background:${CAT_COLORS[i]}"></span>${l}</div>`).join('');
+  const sorted=[...labels.map((l,i)=>({l,v:vals[i],c:CAT_COLORS[i]}))].sort((a,b)=>b.v-a.v);
+  document.getElementById('participation-bars').innerHTML=sorted.map(it=>`
+    <div class="part-item">
+      <div class="part-header">
+        <span class="part-name">${it.l}</span>
+        <span class="part-pct">${((it.v/total)*100).toFixed(1)}%</span>
+      </div>
+      <div class="part-track"><div class="part-fill" style="width:${((it.v/total)*100).toFixed(1)}%;background:${it.c}"></div></div>
+    </div>
+  `).join('');
+}
+
+function renderInsights(data) {
+  const byM={};
+  data.forEach(d=>{ const k=getMonthKey(d.data); if(!byM[k]) byM[k]={rec:0,desp:0}; if(d.tipo==='Receita') byM[k].rec+=d.valor; else byM[k].desp+=Math.abs(d.valor); });
+  const catT={}; data.filter(d=>d.tipo==='Despesa').forEach(d=>{ catT[d.cat]=(catT[d.cat]||0)+Math.abs(d.valor); });
+  const topCat=Object.entries(catT).sort((a,b)=>b[1]-a[1])[0];
+  const totalD=Object.values(catT).reduce((s,v)=>s+v,0);
+  const topRec=Object.entries(byM).sort((a,b)=>b[1].rec-a[1].rec)[0];
+  const topRes=Object.entries(byM).sort((a,b)=>(b[1].rec-b[1].desp)-(a[1].rec-a[1].desp))[0];
+  const totalR=data.filter(d=>d.tipo==='Receita').reduce((s,d)=>s+d.valor,0);
+  const mdo=catT['Mão de obra']||0;
+  document.getElementById('insights-grid').innerHTML=`
+    <div class="insight-item"><div class="insight-tag">Maior despesa</div><div class="insight-val">${topCat?topCat[0]:'-'}</div><div class="insight-desc">${topCat?fmt(topCat[1])+' — '+((topCat[1]/totalD)*100).toFixed(1)+'% do total':'-'}</div></div>
+    <div class="insight-item"><div class="insight-tag">Maior receita</div><div class="insight-val">${topRec?getMonthLabel(topRec[0]):'-'}</div><div class="insight-desc">${topRec?fmt(topRec[1].rec):'-'}</div></div>
+    <div class="insight-item"><div class="insight-tag">Melhor resultado</div><div class="insight-val">${topRes?getMonthLabel(topRes[0]):'-'}</div><div class="insight-desc">${topRes?fmt(topRes[1].rec-topRes[1].desp)+' líquido':'-'}</div></div>
+    <div class="insight-item"><div class="insight-tag">Eficiência mão de obra</div><div class="insight-val">${totalR>0?((mdo/totalR)*100).toFixed(1)+'% da receita':'-'}</div><div class="insight-desc">${fmt(mdo)}</div></div>
+  `;
+}
+
+function renderTable(data, tab) {
+  let rows=[...data].sort((a,b)=>b.data.localeCompare(a.data));
+  if(tab&&tab!=='all') rows=rows.filter(r=>r.cat===tab);
+  if(!rows.length) { document.getElementById('table-body').innerHTML='<tr><td colspan="9"><div class="empty">Nenhum lançamento encontrado.</div></td></tr>'; return; }
+  document.getElementById('table-body').innerHTML=rows.map(r=>`
+    <tr>
+      <td style="white-space:nowrap">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
+      <td><span class="badge badge-${r.tipo.toLowerCase()}">${r.tipo}</span></td>
+      <td>${r.cat}</td>
+      <td style="color:var(--text2)">${r.sub}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.desc}</td>
+      <td class="${r.tipo==='Receita'?'val-receita':'val-despesa'}" style="white-space:nowrap">${r.tipo==='Receita'?'':'-'} ${fmt(r.valor)}</td>
+      <td style="color:var(--text2)">${r.pag}</td>
+      <td style="color:var(--text2);font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.obs||'—'}</td>
+      <td><button class="btn-delete" onclick="deleteLancamento('${r.id}')" title="Excluir">×</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderAll(data) {
+  renderKPIs(data);
+  renderBarChart(data);
+  renderLineChart(data);
+  renderPieChart(data);
+  renderInsights(data);
+  renderTable(data, activeTab);
+}
+
+/* ── FILTERS ── */
+function applyFilters() {
+  const from=document.getElementById('f-from').value;
+  const to=document.getElementById('f-to').value;
+  const tipo=document.getElementById('f-tipo').value;
+  const cat=document.getElementById('f-cat').value;
+  filteredData=allData.filter(d=>{
+    if(from&&d.data<from) return false;
+    if(to&&d.data>to) return false;
+    if(tipo&&d.tipo!==tipo) return false;
+    if(cat&&d.cat!==cat) return false;
+    return true;
+  });
+  renderAll(filteredData);
+}
+function clearFilters() {
+  ['f-from','f-to','f-tipo','f-cat'].forEach(id=>document.getElementById(id).value='');
+  filteredData=[...allData]; renderAll(filteredData);
+}
+function filterTab(tab,el) {
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderTable(filteredData, tab);
+}
+
+/* ── MODAL ── */
+function openModal() {
+  document.getElementById('m-data').value=new Date().toISOString().slice(0,10);
+  document.getElementById('m-desc').value='';
+  document.getElementById('m-valor').value='';
+  document.getElementById('m-obs').value='';
+  updateFormCats();
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target.id==='modal') closeModal(); }
+
+function updateFormCats() {
+  const tipo=document.getElementById('m-tipo').value;
+  const catSel=document.getElementById('m-cat');
+  if(tipo==='Receita') catSel.innerHTML='<option value="Eventos Privados">Eventos Privados</option>';
+  else catSel.innerHTML=Object.keys(subcatsMap).filter(k=>k!=='Eventos Privados').map(k=>`<option value="${k}">${k}</option>`).join('');
+  updateFormSubcats();
+}
+function updateFormSubcats() {
+  const cat=document.getElementById('m-cat').value;
+  const opts=subcatsMap[cat]||['Outros'];
+  document.getElementById('m-subcat').innerHTML=opts.map(o=>`<option>${o}</option>`).join('');
+}
+
+async function addLancamento() {
+  const data=document.getElementById('m-data').value;
+  const tipo=document.getElementById('m-tipo').value;
+  const cat=document.getElementById('m-cat').value;
+  const sub=document.getElementById('m-subcat').value;
+  const desc=document.getElementById('m-desc').value.trim();
+  const valorRaw=parseFloat(document.getElementById('m-valor').value);
+  const pag=document.getElementById('m-pag').value;
+  const obs=document.getElementById('m-obs').value.trim();
+  if(!data||!desc||isNaN(valorRaw)||valorRaw<=0) { showToast('Preencha data, descrição e valor.','error'); return; }
+  const valor=tipo==='Receita'?valorRaw:-valorRaw;
+  const item={data,tipo,cat,sub,desc,valor,pag,obs};
+  const btn=document.getElementById('btn-confirm');
+  btn.textContent='Salvando...'; btn.disabled=true;
+  try {
+    if(fbReady) {
+      const ref=await window._addDoc(window._colRef,item);
+      item.id=ref.id;
+    } else {
+      item.id='local-'+Date.now();
+    }
+    allData.unshift(item);
+    filteredData=[...allData];
+    renderAll(filteredData);
+    document.getElementById('last-update').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+    showToast('Lançamento salvo com sucesso!','success');
+    closeModal();
+  } catch(e) {
+    showToast('Erro ao salvar: '+e.message,'error');
+  }
+  btn.textContent='Confirmar'; btn.disabled=false;
+}
+
+async function deleteLancamento(id) {
+  if(!confirm('Excluir este lançamento?')) return;
+  try {
+    if(fbReady&&!id.startsWith('local-')) await window._deleteDoc(window._doc(window._db,window._colRef.path,id));
+    allData=allData.filter(d=>d.id!==id);
+    filteredData=filteredData.filter(d=>d.id!==id);
+    renderAll(filteredData);
+    showToast('Lançamento excluído.','success');
+  } catch(e) {
+    showToast('Erro ao excluir: '+e.message,'error');
+  }
+}
+</script>
+</body>
+</html>
