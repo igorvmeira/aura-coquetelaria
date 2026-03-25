@@ -16,12 +16,13 @@
   // 🔥 COLE AQUI SUAS CREDENCIAIS DO FIREBASE
   // =============================================
   const firebaseConfig = {
-    apiKey: "COLE_AQUI",
-    authDomain: "COLE_AQUI",
-    projectId: "COLE_AQUI",
-    storageBucket: "COLE_AQUI",
-    messagingSenderId: "COLE_AQUI",
-    appId: "COLE_AQUI"
+    apiKey: "AIzaSyA0z33Y_L2f45p5IPqDkfr-138U_6PM4-w",
+    authDomain: "aura-coquetelaria.firebaseapp.com",
+    projectId: "aura-coquetelaria",
+    storageBucket: "aura-coquetelaria.firebasestorage.app",
+    messagingSenderId: "494248814633",
+    appId: "1:494248814633:web:e2abc6d215105126ff1438",
+    measurementId: "G-S8WVL08EH1"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -731,10 +732,11 @@ setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
 async function loadFromFirebase() {
   try {
     const snap = await window._getDocs(window._colRef);
-    if(snap.empty) {
+    const realDocs = snap.docs.filter(d => d.data().tipo !== undefined);
+    if(realDocs.length === 0) {
       await seedFirebase();
     } else {
-      allData = snap.docs.map(d=>({id:d.id,...d.data()}));
+      allData = realDocs.map(d=>({id:d.id,...d.data()}));
       allData.sort((a,b)=>b.data.localeCompare(a.data));
       filteredData = [...allData];
       renderAll(filteredData);
