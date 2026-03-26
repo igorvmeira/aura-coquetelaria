@@ -942,8 +942,8 @@ let fbReady = false;
 window.addEventListener('firebaseReady', async () => {
   fbReady = true;
   document.getElementById('save-text').textContent = 'Firebase conectado';
-  await loadFromFirebase();
-  await loadPendencias();
+  await loadPendencias();   // carrega pendências primeiro
+  await loadFromFirebase(); // depois renderiza dashboard (já com pendências disponíveis)
 });
 setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
 
@@ -1325,11 +1325,12 @@ async function loadPendencias() {
   try {
     const snap = await window._getDocs(window._collection(window._db, colPend));
     pendencias = snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderPendencias();
   } catch(e) {
-    pendencias = JSON.parse(localStorage.getItem('pend_local')||'[]');
-    renderPendencias();
+    pendencias = [];
   }
+  // Se dashboard já estiver renderizado, atualiza KPIs com pendências
+  if(filteredData.length > 0) renderKPIs(filteredData);
+  if(document.getElementById('page-pendencias').classList.contains('active')) renderPendencias();
 }
 
 /* ════════════════════════════════
