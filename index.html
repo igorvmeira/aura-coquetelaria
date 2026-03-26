@@ -39,6 +39,7 @@
   window._query = query;
   window._orderBy = orderBy;
   window._setDoc = setDoc;
+  window._collection = collection;
   window._firebaseReady = true;
 
   window.dispatchEvent(new Event("firebaseReady"));
@@ -376,6 +377,83 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 @media (max-width: 500px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── NAV TABS (páginas) ── */
+.page-nav {
+  display: flex; gap: 4px; margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border); padding-bottom: 0;
+}
+.page-tab {
+  background: transparent; border: none; color: var(--text2);
+  padding: 10px 18px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.15s; font-weight: 400;
+}
+.page-tab:hover { color: var(--teal); }
+.page-tab.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 500; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── PENDÊNCIAS ── */
+.pend-kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 1.5rem; }
+.pend-section { margin-bottom: 1.5rem; }
+.pend-section-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.pend-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.pend-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.pend-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pend-table th {
+  text-align: left; padding: 9px 14px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text3); font-weight: 400; border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+.pend-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.pend-table tr:last-child td { border-bottom: none; }
+.pend-table tr:hover td { background: rgba(255,255,255,0.02); }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.status-pendente { background: rgba(200,149,42,0.15); color: #f0b84a; }
+.status-vencido  { background: rgba(216,90,48,0.15);  color: #f0895c; }
+.status-pago     { background: rgba(29,158,117,0.15); color: #4ecba0; }
+.status-parcial  { background: rgba(42,143,163,0.15); color: #4ab0c6; }
+.venc-ok   { color: var(--text2); font-size: 12px; }
+.venc-warn { color: var(--gold);  font-size: 12px; font-weight: 500; }
+.venc-late { color: var(--red);   font-size: 12px; font-weight: 500; }
+.btn-marcar {
+  background: transparent; border: 1px solid var(--border2); color: var(--text2);
+  padding: 4px 10px; border-radius: var(--radius-sm); font-size: 11px;
+  cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+}
+.btn-marcar:hover { border-color: var(--green); color: var(--green); }
+.btn-marcar-pago { border-color: var(--green); color: var(--green); }
+.btn-marcar-pago:hover { background: rgba(29,158,117,0.1); }
+.btn-pend-edit {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 15px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+}
+.btn-pend-edit:hover { color: var(--teal); background: rgba(42,143,163,0.1); }
+.btn-pend-del {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+}
+.btn-pend-del:hover { color: var(--red); background: rgba(216,90,48,0.1); }
+.pend-empty { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 13px; }
+.progress-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.progress-bar { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; min-width: 60px; }
+.progress-fill { height: 100%; border-radius: 2px; background: var(--teal); }
+
+@media (max-width: 900px) { .pend-kpi-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px) { .pend-kpi-grid { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -398,12 +476,21 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       <span class="save-dot"></span>
       <span id="save-text">Conectando...</span>
     </div>
-    <button class="btn-primary btn" onclick="openModal()">+ Novo Lançamento</button>
+    <button class="btn-primary btn" id="btn-novo" onclick="openModal()">+ Novo Lançamento</button>
   </div>
 </header>
 
 <!-- MAIN -->
 <main class="main">
+
+  <!-- NAV -->
+  <div class="page-nav">
+    <button class="page-tab active" onclick="switchPage('dashboard',this)">Dashboard</button>
+    <button class="page-tab" onclick="switchPage('pendencias',this)">Contas a Receber / Pagar</button>
+  </div>
+
+  <!-- PAGE: DASHBOARD -->
+  <div class="page active" id="page-dashboard">
 
   <div class="status-bar">
     <span id="status-msg" class="online">
@@ -510,7 +597,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
   </div>
 
-</main>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
@@ -569,6 +655,129 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Cancelar</button>
       <button class="btn-primary btn" onclick="addLancamento()" id="btn-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /page-dashboard -->
+
+  <!-- PAGE: PENDÊNCIAS -->
+  <div class="page" id="page-pendencias">
+    <div class="pend-kpi-grid" id="pend-kpi-grid"></div>
+
+    <div class="pend-section">
+      <div class="pend-section-title" style="color:#4ecba0;">
+        Contas a Receber
+      </div>
+      <div class="pend-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;color:var(--text2);">Valores pendentes de entrada</span>
+          <button class="btn-primary btn" style="font-size:12px;padding:6px 12px;" onclick="openPendModal('receber')">+ Nova conta a receber</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="pend-table" id="tbl-receber">
+            <thead><tr>
+              <th>Cliente / Evento</th><th>Descrição</th><th>Valor total</th>
+              <th>Valor recebido</th><th>Saldo</th><th>Vencimento</th><th>Status</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="body-receber"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="pend-section">
+      <div class="pend-section-title" style="color:#f0895c;">
+        Contas a Pagar
+      </div>
+      <div class="pend-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;color:var(--text2);">Valores pendentes de saída</span>
+          <button class="btn-primary btn" style="font-size:12px;padding:6px 12px;background:var(--red);border-color:var(--red);" onclick="openPendModal('pagar')">+ Nova conta a pagar</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="pend-table" id="tbl-pagar">
+            <thead><tr>
+              <th>Fornecedor / Descrição</th><th>Categoria</th><th>Valor total</th>
+              <th>Valor pago</th><th>Saldo</th><th>Vencimento</th><th>Status</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="body-pagar"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-pendencias -->
+
+</div><!-- /main inner -->
+
+<!-- MODAL PENDÊNCIA -->
+<div class="modal-overlay" id="modal-pend" onclick="closePendModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title" id="pend-modal-title">Nova conta a receber</div>
+    <input type="hidden" id="pm-editing-id" value="">
+    <input type="hidden" id="pm-tipo" value="receber">
+    <div class="form-row">
+      <div class="form-group full">
+        <label id="pm-label-cliente">Cliente / Evento</label>
+        <input type="text" id="pm-cliente" placeholder="Ex: Casamento João e Maria">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Descrição</label>
+        <input type="text" id="pm-desc" placeholder="Detalhe do lançamento...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Valor total (R$)</label>
+        <input type="number" id="pm-valor-total" placeholder="0,00" step="0.01" min="0" oninput="calcSaldo()">
+      </div>
+      <div class="form-group">
+        <label id="pm-label-recebido">Valor já recebido (R$)</label>
+        <input type="number" id="pm-valor-pago" placeholder="0,00" step="0.01" min="0" value="0" oninput="calcSaldo()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Saldo pendente</label>
+        <input type="text" id="pm-saldo" readonly style="opacity:0.6;">
+      </div>
+      <div class="form-group">
+        <label>Data de vencimento</label>
+        <input type="date" id="pm-vencimento">
+      </div>
+    </div>
+    <div class="form-row" id="pm-cat-row">
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="pm-cat">
+          <option value="Insumos">Insumos</option>
+          <option value="Manutenção">Manutenção</option>
+          <option value="Mão de obra">Mão de obra</option>
+          <option value="Compras operacionais">Compras operacionais</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Outras despesas">Outras despesas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Forma de pagamento esperada</label>
+        <select id="pm-pag">
+          <option>PIX</option><option>Dinheiro</option>
+          <option>Cartão crédito</option><option>Transferência</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Observações</label>
+        <input type="text" id="pm-obs" placeholder="Opcional...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closePendModal()">Cancelar</button>
+      <button class="btn-primary btn" id="btn-pend-confirm" onclick="savePendencia()">Salvar</button>
     </div>
   </div>
 </div>
@@ -734,6 +943,7 @@ window.addEventListener('firebaseReady', async () => {
   fbReady = true;
   document.getElementById('save-text').textContent = 'Firebase conectado';
   await loadFromFirebase();
+  await loadPendencias();
 });
 setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
 
@@ -1075,6 +1285,321 @@ async function deleteLancamento(id) {
     showToast('Erro ao excluir: '+e.message,'error');
   }
 }
+
+/* ════════════════════════════════
+   NAVEGAÇÃO DE PÁGINAS
+════════════════════════════════ */
+function switchPage(page, el) {
+  document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+page).classList.add('active');
+  const btnNovo = document.getElementById('btn-novo');
+  if(page === 'pendencias') {
+    btnNovo.style.display = 'none';
+  } else {
+    btnNovo.style.display = '';
+  }
+  if(page === 'pendencias') renderPendencias();
+}
+
+/* ════════════════════════════════
+   PENDÊNCIAS — DADOS & ESTADO
+════════════════════════════════ */
+let pendencias = [];
+const colPend = 'pendencias';
+
+async function loadPendencias() {
+  if(!fbReady) { pendencias = JSON.parse(localStorage.getItem('pend_local')||'[]'); renderPendencias(); return; }
+  try {
+    const snap = await window._getDocs(window._collection(window._db, colPend));
+    pendencias = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderPendencias();
+  } catch(e) {
+    pendencias = JSON.parse(localStorage.getItem('pend_local')||'[]');
+    renderPendencias();
+  }
+}
+
+/* ════════════════════════════════
+   RENDER PENDÊNCIAS
+════════════════════════════════ */
+function getStatus(item) {
+  const saldo = item.valorTotal - (item.valorPago||0);
+  if(saldo <= 0) return 'pago';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  if(item.vencimento) {
+    const venc = new Date(item.vencimento+'T00:00:00');
+    if(venc < hoje) return 'vencido';
+    const diff = Math.ceil((venc - hoje)/(1000*60*60*24));
+    if(diff <= 7) return 'aviso';
+  }
+  if((item.valorPago||0) > 0) return 'parcial';
+  return 'pendente';
+}
+
+function statusPill(status) {
+  const map = {
+    pago:     ['status-pago',    '✓ Pago'],
+    vencido:  ['status-vencido', '! Vencido'],
+    aviso:    ['status-pendente','⚠ Vence em breve'],
+    parcial:  ['status-parcial', '◑ Parcial'],
+    pendente: ['status-pendente','● Pendente'],
+  };
+  const [cls, label] = map[status]||map['pendente'];
+  return `<span class="status-pill ${cls}">${label}</span>`;
+}
+
+function vencClass(item) {
+  const s = getStatus(item);
+  if(s==='vencido') return 'venc-late';
+  if(s==='aviso')   return 'venc-warn';
+  return 'venc-ok';
+}
+
+function fmtDate(d) {
+  if(!d) return '—';
+  return new Date(d+'T00:00:00').toLocaleDateString('pt-BR');
+}
+
+function diasLabel(item) {
+  if(!item.vencimento) return '';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const venc = new Date(item.vencimento+'T00:00:00');
+  const diff = Math.ceil((venc-hoje)/(1000*60*60*24));
+  if(diff<0) return ` (${Math.abs(diff)}d atrasado)`;
+  if(diff===0) return ' (hoje)';
+  if(diff<=7) return ` (em ${diff}d)`;
+  return '';
+}
+
+function renderPendencias() {
+  const receber = pendencias.filter(p=>p.tipo==='receber');
+  const pagar   = pendencias.filter(p=>p.tipo==='pagar');
+
+  // KPIs
+  const totRec = receber.filter(p=>getStatus(p)!=='pago').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const totPag = pagar.filter(p=>getStatus(p)!=='pago').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const vencRec = receber.filter(p=>getStatus(p)==='vencido').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const vencPag = pagar.filter(p=>getStatus(p)==='vencido').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const saldo   = totRec - totPag;
+
+  document.getElementById('pend-kpi-grid').innerHTML = `
+    <div class="kpi-card" style="--accent:var(--green)">
+      <div class="kpi-label">A receber (em aberto)</div>
+      <div class="kpi-value green">${fmt(totRec)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--red)">
+      <div class="kpi-label">A pagar (em aberto)</div>
+      <div class="kpi-value red">${fmt(totPag)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:${saldo>=0?'var(--green)':'var(--red)'}">
+      <div class="kpi-label">Saldo líquido pendente</div>
+      <div class="kpi-value ${saldo>=0?'green':'red'}">${saldo<0?'− ':''} ${fmt(saldo)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--red)">
+      <div class="kpi-label">Vencidos (rec. + pag.)</div>
+      <div class="kpi-value red">${fmt(vencRec+vencPag)}</div>
+    </div>
+  `;
+
+  // Tabela receber
+  const tbR = document.getElementById('body-receber');
+  if(!receber.length) {
+    tbR.innerHTML = '<tr><td colspan="8"><div class="pend-empty">Nenhuma conta a receber cadastrada.</div></td></tr>';
+  } else {
+    tbR.innerHTML = receber.map(p=>{
+      const saldo = p.valorTotal - (p.valorPago||0);
+      const pct = Math.min(100, Math.round(((p.valorPago||0)/p.valorTotal)*100));
+      const st = getStatus(p);
+      return `<tr>
+        <td style="font-weight:500;">${p.cliente}</td>
+        <td style="color:var(--text2);font-size:12px;">${p.desc||'—'}</td>
+        <td>${fmt(p.valorTotal)}</td>
+        <td>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
+            <span style="font-size:12px;color:var(--green);min-width:36px;">${fmt(p.valorPago||0)}</span>
+          </div>
+        </td>
+        <td style="font-weight:500;color:${saldo>0?'var(--gold)':'var(--green)'}">${fmt(saldo)}</td>
+        <td class="${vencClass(p)}">${fmtDate(p.vencimento)}${diasLabel(p)}</td>
+        <td>${statusPill(st)}</td>
+        <td style="display:flex;gap:4px;align-items:center;">
+          ${st!=='pago'?`<button class="btn-marcar btn-marcar-pago" onclick="marcarPago('${p.id}','receber')">✓ Recebido</button>`:''}
+          <button class="btn-pend-edit" onclick="editPend('${p.id}')">✎</button>
+          <button class="btn-pend-del" onclick="deletePend('${p.id}')">×</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Tabela pagar
+  const tbP = document.getElementById('body-pagar');
+  if(!pagar.length) {
+    tbP.innerHTML = '<tr><td colspan="8"><div class="pend-empty">Nenhuma conta a pagar cadastrada.</div></td></tr>';
+  } else {
+    tbP.innerHTML = pagar.map(p=>{
+      const saldo = p.valorTotal - (p.valorPago||0);
+      const pct = Math.min(100, Math.round(((p.valorPago||0)/p.valorTotal)*100));
+      const st = getStatus(p);
+      return `<tr>
+        <td style="font-weight:500;">${p.cliente}</td>
+        <td style="color:var(--text2);font-size:12px;">${p.cat||'—'}</td>
+        <td>${fmt(p.valorTotal)}</td>
+        <td>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--teal)"></div></div>
+            <span style="font-size:12px;color:var(--teal);min-width:36px;">${fmt(p.valorPago||0)}</span>
+          </div>
+        </td>
+        <td style="font-weight:500;color:${saldo>0?'var(--red)':'var(--green)'}">${fmt(saldo)}</td>
+        <td class="${vencClass(p)}">${fmtDate(p.vencimento)}${diasLabel(p)}</td>
+        <td>${statusPill(st)}</td>
+        <td style="display:flex;gap:4px;align-items:center;">
+          ${st!=='pago'?`<button class="btn-marcar" onclick="marcarPago('${p.id}','pagar')">✓ Pago</button>`:''}
+          <button class="btn-pend-edit" onclick="editPend('${p.id}')">✎</button>
+          <button class="btn-pend-del" onclick="deletePend('${p.id}')">×</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+/* ════════════════════════════════
+   MODAL PENDÊNCIA
+════════════════════════════════ */
+function openPendModal(tipo) {
+  document.getElementById('pm-editing-id').value = '';
+  document.getElementById('pm-tipo').value = tipo;
+  document.getElementById('pend-modal-title').textContent = tipo==='receber' ? 'Nova conta a receber' : 'Nova conta a pagar';
+  document.getElementById('pm-label-cliente').textContent = tipo==='receber' ? 'Cliente / Evento' : 'Fornecedor / Descrição';
+  document.getElementById('pm-label-recebido').textContent = tipo==='receber' ? 'Valor já recebido (R$)' : 'Valor já pago (R$)';
+  document.getElementById('pm-cat-row').style.display = tipo==='pagar' ? '' : 'none';
+  document.getElementById('btn-pend-confirm').style.background = tipo==='pagar' ? 'var(--red)' : 'var(--teal)';
+  document.getElementById('btn-pend-confirm').style.borderColor = tipo==='pagar' ? 'var(--red)' : 'var(--teal)';
+  document.getElementById('pm-cliente').value='';
+  document.getElementById('pm-desc').value='';
+  document.getElementById('pm-valor-total').value='';
+  document.getElementById('pm-valor-pago').value='0';
+  document.getElementById('pm-saldo').value='';
+  document.getElementById('pm-vencimento').value='';
+  document.getElementById('pm-obs').value='';
+  document.getElementById('modal-pend').classList.add('open');
+}
+
+function editPend(id) {
+  const p = pendencias.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('pm-editing-id').value = id;
+  document.getElementById('pm-tipo').value = p.tipo;
+  document.getElementById('pend-modal-title').textContent = p.tipo==='receber' ? 'Editar conta a receber' : 'Editar conta a pagar';
+  document.getElementById('pm-label-cliente').textContent = p.tipo==='receber' ? 'Cliente / Evento' : 'Fornecedor / Descrição';
+  document.getElementById('pm-label-recebido').textContent = p.tipo==='receber' ? 'Valor já recebido (R$)' : 'Valor já pago (R$)';
+  document.getElementById('pm-cat-row').style.display = p.tipo==='pagar' ? '' : 'none';
+  document.getElementById('btn-pend-confirm').style.background = p.tipo==='pagar' ? 'var(--red)' : 'var(--teal)';
+  document.getElementById('btn-pend-confirm').style.borderColor = p.tipo==='pagar' ? 'var(--red)' : 'var(--teal)';
+  document.getElementById('pm-cliente').value = p.cliente||'';
+  document.getElementById('pm-desc').value = p.desc||'';
+  document.getElementById('pm-valor-total').value = p.valorTotal||'';
+  document.getElementById('pm-valor-pago').value = p.valorPago||0;
+  document.getElementById('pm-vencimento').value = p.vencimento||'';
+  document.getElementById('pm-obs').value = p.obs||'';
+  if(p.cat) document.getElementById('pm-cat').value = p.cat;
+  calcSaldo();
+  document.getElementById('modal-pend').classList.add('open');
+}
+
+function closePendModal() { document.getElementById('modal-pend').classList.remove('open'); }
+function closePendModalOutside(e) { if(e.target.id==='modal-pend') closePendModal(); }
+
+function calcSaldo() {
+  const total = parseFloat(document.getElementById('pm-valor-total').value)||0;
+  const pago  = parseFloat(document.getElementById('pm-valor-pago').value)||0;
+  const saldo = Math.max(0, total-pago);
+  document.getElementById('pm-saldo').value = 'R$ ' + saldo.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+async function savePendencia() {
+  const editingId = document.getElementById('pm-editing-id').value;
+  const tipo      = document.getElementById('pm-tipo').value;
+  const cliente   = document.getElementById('pm-cliente').value.trim();
+  const desc      = document.getElementById('pm-desc').value.trim();
+  const valorTotal= parseFloat(document.getElementById('pm-valor-total').value);
+  const valorPago = parseFloat(document.getElementById('pm-valor-pago').value)||0;
+  const vencimento= document.getElementById('pm-vencimento').value;
+  const cat       = document.getElementById('pm-cat').value;
+  const pag       = document.getElementById('pm-pag').value;
+  const obs       = document.getElementById('pm-obs').value.trim();
+
+  if(!cliente||isNaN(valorTotal)||valorTotal<=0) {
+    showToast('Preencha o cliente/fornecedor e o valor total.','error'); return;
+  }
+
+  const item = {tipo,cliente,desc,valorTotal,valorPago,vencimento,cat,pag,obs};
+  const btn = document.getElementById('btn-pend-confirm');
+  btn.textContent='Salvando...'; btn.disabled=true;
+
+  try {
+    if(editingId) {
+      if(fbReady && !editingId.startsWith('local-')) {
+        await window._setDoc(window._doc(window._db, colPend, editingId), item);
+      }
+      item.id = editingId;
+      const idx = pendencias.findIndex(x=>x.id===editingId);
+      if(idx>-1) pendencias[idx]=item;
+      showToast('Conta atualizada!','success');
+    } else {
+      if(fbReady) {
+        const ref = await window._addDoc(window._collection(window._db, colPend), item);
+        item.id = ref.id;
+      } else {
+        item.id = 'local-'+Date.now();
+      }
+      pendencias.push(item);
+      showToast('Conta salva!','success');
+    }
+    renderPendencias();
+    closePendModal();
+  } catch(e) {
+    showToast('Erro: '+e.message,'error');
+  }
+  btn.textContent='Salvar'; btn.disabled=false;
+}
+
+async function marcarPago(id, tipo) {
+  const p = pendencias.find(x=>x.id===id);
+  if(!p) return;
+  const label = tipo==='receber' ? 'recebido' : 'pago';
+  const extra = parseFloat(prompt(`Valor ${label} agora (R$):
+(Saldo: ${fmt(p.valorTotal-(p.valorPago||0))})`));
+  if(isNaN(extra)||extra<=0) return;
+  p.valorPago = Math.min(p.valorTotal, (p.valorPago||0)+extra);
+  try {
+    if(fbReady && !p.id.startsWith('local-')) {
+      await window._setDoc(window._doc(window._db, colPend, p.id), p);
+    }
+    renderPendencias();
+    showToast('Valor atualizado!','success');
+  } catch(e) {
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
+async function deletePend(id) {
+  if(!confirm('Excluir esta conta?')) return;
+  try {
+    if(fbReady && !id.startsWith('local-')) {
+      await window._deleteDoc(window._doc(window._db, colPend, id));
+    }
+    pendencias = pendencias.filter(x=>x.id!==id);
+    renderPendencias();
+    showToast('Conta excluída.','success');
+  } catch(e) {
+    showToast('Erro: '+e.message,'error');
+  }
+}
+
 </script>
 </body>
 </html>
