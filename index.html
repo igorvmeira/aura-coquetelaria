@@ -989,11 +989,18 @@ function loadFallback() {
 
 /* ── RENDER KPIs ── */
 function renderKPIs(data) {
-  const rec = data.filter(d=>d.tipo==='Receita').reduce((s,d)=>s+d.valor,0);
+  const rec  = data.filter(d=>d.tipo==='Receita').reduce((s,d)=>s+d.valor,0);
   const desp = data.filter(d=>d.tipo==='Despesa').reduce((s,d)=>s+Math.abs(d.valor),0);
-  const res = rec-desp;
-  const ins = data.filter(d=>d.cat==='Insumos').reduce((s,d)=>s+Math.abs(d.valor),0);
-  const mdo = data.filter(d=>d.cat==='Mão de obra').reduce((s,d)=>s+Math.abs(d.valor),0);
+  const res  = rec - desp;
+
+  // Pendências vindas da aba Contas a Receber / Pagar
+  const aRec = pendencias
+    .filter(p=>p.tipo==='receber' && getStatus(p)!=='pago')
+    .reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const aPag = pendencias
+    .filter(p=>p.tipo==='pagar' && getStatus(p)!=='pago')
+    .reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi-card" style="--accent:var(--green)">
       <div class="kpi-label">Receita total</div>
@@ -1007,17 +1014,21 @@ function renderKPIs(data) {
       <div class="kpi-label">Resultado líquido</div>
       <div class="kpi-value ${res>=0?'green':'red'}">${res<0?'− ':''} ${fmt(res)}</div>
     </div>
-    <div class="kpi-card" style="--accent:var(--teal)">
-      <div class="kpi-label">Total insumos</div>
-      <div class="kpi-value teal">${fmt(ins)}</div>
+    <div class="kpi-card" style="--accent:var(--green);cursor:pointer;" onclick="switchPage('pendencias',document.querySelectorAll('.page-tab')[1])" title="Ver contas a receber">
+      <div class="kpi-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>A receber (em aberto)</span>
+        <span style="font-size:10px;color:var(--teal);letter-spacing:0;">↗</span>
+      </div>
+      <div class="kpi-value green">${fmt(aRec)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">${pendencias.filter(p=>p.tipo==='receber'&&getStatus(p)!=='pago').length} conta(s) pendente(s)</div>
     </div>
-    <div class="kpi-card" style="--accent:var(--teal)">
-      <div class="kpi-label">Total mão de obra</div>
-      <div class="kpi-value teal">${fmt(mdo)}</div>
-    </div>
-    <div class="kpi-card" style="--accent:var(--text3)">
-      <div class="kpi-label">Total desperdícios</div>
-      <div class="kpi-value" style="color:var(--text2)">R$ 0,00</div>
+    <div class="kpi-card" style="--accent:var(--red);cursor:pointer;" onclick="switchPage('pendencias',document.querySelectorAll('.page-tab')[1])" title="Ver contas a pagar">
+      <div class="kpi-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>A pagar (em aberto)</span>
+        <span style="font-size:10px;color:var(--teal);letter-spacing:0;">↗</span>
+      </div>
+      <div class="kpi-value red">${fmt(aPag)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;">${pendencias.filter(p=>p.tipo==='pagar'&&getStatus(p)!=='pago').length} conta(s) pendente(s)</div>
     </div>
   `;
 }
@@ -1142,7 +1153,7 @@ function renderTable(data, tab) {
 }
 
 function renderAll(data) {
-  renderKPIs(data);
+  renderKPIs(data); // usa `pendencias` global
   renderBarChart(data);
   renderLineChart(data);
   renderPieChart(data);
@@ -1560,6 +1571,8 @@ async function savePendencia() {
       showToast('Conta salva!','success');
     }
     renderPendencias();
+    // Atualiza painel do dashboard se estiver visível
+    if(document.getElementById('page-dashboard').classList.contains('active')) renderKPIs(filteredData);
     closePendModal();
   } catch(e) {
     showToast('Erro: '+e.message,'error');
@@ -1580,6 +1593,7 @@ async function marcarPago(id, tipo) {
       await window._setDoc(window._doc(window._db, colPend, p.id), p);
     }
     renderPendencias();
+    if(document.getElementById('page-dashboard').classList.contains('active')) renderKPIs(filteredData);
     showToast('Valor atualizado!','success');
   } catch(e) {
     showToast('Erro: '+e.message,'error');
@@ -1594,6 +1608,7 @@ async function deletePend(id) {
     }
     pendencias = pendencias.filter(x=>x.id!==id);
     renderPendencias();
+    if(document.getElementById('page-dashboard').classList.contains('active')) renderKPIs(filteredData);
     showToast('Conta excluída.','success');
   } catch(e) {
     showToast('Erro: '+e.message,'error');
