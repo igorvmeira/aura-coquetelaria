@@ -10,7 +10,7 @@
 <!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // =============================================
   // 🔥 COLE AQUI SUAS CREDENCIAIS DO FIREBASE
@@ -38,6 +38,7 @@
   window._onSnapshot = onSnapshot;
   window._query = query;
   window._orderBy = orderBy;
+  window._setDoc = setDoc;
   window._firebaseReady = true;
 
   window.dispatchEvent(new Event("firebaseReady"));
@@ -287,6 +288,12 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   border-radius: 4px; transition: all 0.15s; line-height: 1;
 }
 .btn-delete:hover { color: var(--red); background: rgba(216,90,48,0.1); }
+.btn-edit {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 15px; padding: 2px 6px;
+  border-radius: 4px; transition: all 0.15s; line-height: 1;
+}
+.btn-edit:hover { color: var(--teal); background: rgba(42,143,163,0.1); }
 
 /* ── LOADING ── */
 .loading {
@@ -508,7 +515,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
   <div class="modal">
-    <div class="modal-title">Novo Lançamento</div>
+    <div class="modal-title" id="modal-title">Novo Lançamento</div>
+    <input type="hidden" id="m-editing-id" value="">
     <div class="form-row">
       <div class="form-group">
         <label>Data</label>
@@ -915,7 +923,10 @@ function renderTable(data, tab) {
       <td class="${r.tipo==='Receita'?'val-receita':'val-despesa'}" style="white-space:nowrap">${r.tipo==='Receita'?'':'-'} ${fmt(r.valor)}</td>
       <td style="color:var(--text2)">${r.pag}</td>
       <td style="color:var(--text2);font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.obs||'—'}</td>
-      <td><button class="btn-delete" onclick="deleteLancamento('${r.id}')" title="Excluir">×</button></td>
+      <td style="white-space:nowrap;display:flex;gap:4px;">
+        <button class="btn-edit" onclick="editLancamento('${r.id}')" title="Editar">✎</button>
+        <button class="btn-delete" onclick="deleteLancamento('${r.id}')" title="Excluir">×</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -957,10 +968,14 @@ function filterTab(tab,el) {
 
 /* ── MODAL ── */
 function openModal() {
+  document.getElementById('m-editing-id').value='';
+  document.getElementById('modal-title').textContent='Novo Lançamento';
+  document.getElementById('btn-confirm').textContent='Confirmar';
   document.getElementById('m-data').value=new Date().toISOString().slice(0,10);
   document.getElementById('m-desc').value='';
   document.getElementById('m-valor').value='';
   document.getElementById('m-obs').value='';
+  document.getElementById('m-tipo').value='Despesa';
   updateFormCats();
   document.getElementById('modal').classList.add('open');
 }
@@ -980,7 +995,27 @@ function updateFormSubcats() {
   document.getElementById('m-subcat').innerHTML=opts.map(o=>`<option>${o}</option>`).join('');
 }
 
+function editLancamento(id) {
+  const r = allData.find(d=>d.id===id);
+  if(!r) return;
+  document.getElementById('m-editing-id').value = id;
+  document.getElementById('modal-title').textContent = 'Editar Lançamento';
+  document.getElementById('btn-confirm').textContent = 'Salvar alterações';
+  document.getElementById('m-data').value = r.data;
+  document.getElementById('m-tipo').value = r.tipo;
+  updateFormCats();
+  document.getElementById('m-cat').value = r.cat;
+  updateFormSubcats();
+  document.getElementById('m-subcat').value = r.sub;
+  document.getElementById('m-desc').value = r.desc;
+  document.getElementById('m-valor').value = Math.abs(r.valor);
+  document.getElementById('m-pag').value = r.pag;
+  document.getElementById('m-obs').value = r.obs||'';
+  document.getElementById('modal').classList.add('open');
+}
+
 async function addLancamento() {
+  const editingId = document.getElementById('m-editing-id').value;
   const data=document.getElementById('m-data').value;
   const tipo=document.getElementById('m-tipo').value;
   const cat=document.getElementById('m-cat').value;
@@ -995,22 +1030,37 @@ async function addLancamento() {
   const btn=document.getElementById('btn-confirm');
   btn.textContent='Salvando...'; btn.disabled=true;
   try {
-    if(fbReady) {
-      const ref=await window._addDoc(window._colRef,item);
-      item.id=ref.id;
+    if(editingId) {
+      // MODO EDIÇÃO
+      if(fbReady&&!editingId.startsWith('local-')) {
+        await window._setDoc(window._doc(window._db, 'lancamentos', editingId), item);
+      }
+      item.id = editingId;
+      const idx = allData.findIndex(d=>d.id===editingId);
+      if(idx>-1) allData[idx]=item;
+      filteredData = [...allData];
+      renderAll(filteredData);
+      showToast('Lançamento atualizado!','success');
     } else {
-      item.id='local-'+Date.now();
+      // MODO NOVO
+      if(fbReady) {
+        const ref=await window._addDoc(window._colRef,item);
+        item.id=ref.id;
+      } else {
+        item.id='local-'+Date.now();
+      }
+      allData.unshift(item);
+      filteredData=[...allData];
+      renderAll(filteredData);
+      showToast('Lançamento salvo com sucesso!','success');
     }
-    allData.unshift(item);
-    filteredData=[...allData];
-    renderAll(filteredData);
     document.getElementById('last-update').textContent='Atualizado: '+new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-    showToast('Lançamento salvo com sucesso!','success');
     closeModal();
   } catch(e) {
     showToast('Erro ao salvar: '+e.message,'error');
   }
-  btn.textContent='Confirmar'; btn.disabled=false;
+  btn.textContent = editingId ? 'Salvar alterações' : 'Confirmar';
+  btn.disabled=false;
 }
 
 async function deleteLancamento(id) {
