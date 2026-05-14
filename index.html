@@ -2069,97 +2069,59 @@ function diasLabel(item) {
 }
 
 function renderPendencias() {
-  const receber = pendencias.filter(p=>p.tipo==='receber');
-  const pagar   = pendencias.filter(p=>p.tipo==='pagar');
+  const receber = pendencias.filter(function(p){ return p.tipo==='receber'; });
+  const pagar   = pendencias.filter(function(p){ return p.tipo==='pagar'; });
 
-  // KPIs
-  const totRec = receber.filter(p=>getStatus(p)!=='pago').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
-  const totPag = pagar.filter(p=>getStatus(p)!=='pago').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
-  const vencRec = receber.filter(p=>getStatus(p)==='vencido').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
-  const vencPag = pagar.filter(p=>getStatus(p)==='vencido').reduce((s,p)=>s+(p.valorTotal-(p.valorPago||0)),0);
+  const totRec  = receber.filter(function(p){ return getStatus(p)!=='pago'; }).reduce(function(s,p){ return s+(p.valorTotal-(p.valorPago||0)); },0);
+  const totPag  = pagar.filter(function(p){ return getStatus(p)!=='pago'; }).reduce(function(s,p){ return s+(p.valorTotal-(p.valorPago||0)); },0);
+  const vencRec = receber.filter(function(p){ return getStatus(p)==='vencido'; }).reduce(function(s,p){ return s+(p.valorTotal-(p.valorPago||0)); },0);
+  const vencPag = pagar.filter(function(p){ return getStatus(p)==='vencido'; }).reduce(function(s,p){ return s+(p.valorTotal-(p.valorPago||0)); },0);
   const saldo   = totRec - totPag;
 
-  document.getElementById('pend-kpi-grid').innerHTML = `
-    <div class="kpi-card" style="--accent:var(--green)">
-      <div class="kpi-label">A receber (em aberto)</div>
-      <div class="kpi-value green">${fmt(totRec)}</div>
-    </div>
-    <div class="kpi-card" style="--accent:var(--red)">
-      <div class="kpi-label">A pagar (em aberto)</div>
-      <div class="kpi-value red">${fmt(totPag)}</div>
-    </div>
-    <div class="kpi-card" style="--accent:${saldo>=0?'var(--green)':'var(--red)'}">
-      <div class="kpi-label">Saldo líquido pendente</div>
-      <div class="kpi-value ${saldo>=0?'green':'red'}">${saldo<0?'− ':''} ${fmt(saldo)}</div>
-    </div>
-    <div class="kpi-card" style="--accent:var(--red)">
-      <div class="kpi-label">Vencidos (rec. + pag.)</div>
-      <div class="kpi-value red">${fmt(vencRec+vencPag)}</div>
-    </div>
-  `;
+  document.getElementById('pend-kpi-grid').innerHTML =
+    '<div class="kpi-card" style="--accent:var(--green)"><div class="kpi-label">A receber (em aberto)</div><div class="kpi-value green">'+fmt(totRec)+'</div></div>'+
+    '<div class="kpi-card" style="--accent:var(--red)"><div class="kpi-label">A pagar (em aberto)</div><div class="kpi-value red">'+fmt(totPag)+'</div></div>'+
+    '<div class="kpi-card" style="--accent:'+(saldo>=0?'var(--green)':'var(--red)')+'"><div class="kpi-label">Saldo líquido pendente</div><div class="kpi-value '+(saldo>=0?'green':'red')+'">'+(saldo<0?'− ':'')+fmt(saldo)+'</div></div>'+
+    '<div class="kpi-card" style="--accent:var(--red)"><div class="kpi-label">Vencidos (rec. + pag.)</div><div class="kpi-value red">'+fmt(vencRec+vencPag)+'</div></div>';
 
-  // Tabela receber
+  function buildRow(p, tipo) {
+    const saldo = p.valorTotal - (p.valorPago||0);
+    const pct   = Math.min(100, Math.round(((p.valorPago||0)/p.valorTotal)*100));
+    const st    = getStatus(p);
+    const barColor = tipo==='receber' ? 'var(--green)' : 'var(--teal)';
+    const saldoColor = tipo==='receber' ? (saldo>0?'var(--gold)':'var(--green)') : (saldo>0?'var(--red)':'var(--green)');
+    const btnLabel  = tipo==='receber' ? '✓ Recebido' : '✓ Pago';
+    const marcarClass = tipo==='receber' ? 'btn-marcar btn-marcar-pago' : 'btn-marcar';
+
+    let row = '<tr>';
+    row += '<td style="font-weight:500;">'+(p.cliente||'—')+'</td>';
+    row += '<td style="color:var(--text2);font-size:12px;">'+(tipo==='receber'?(p.desc||'—'):(p.cat||'—'))+'</td>';
+    row += '<td>'+fmt(p.valorTotal)+'</td>';
+    row += '<td><div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>';
+    row += '<span style="font-size:12px;color:'+barColor+';min-width:36px;">'+fmt(p.valorPago||0)+'</span></div></td>';
+    row += '<td style="font-weight:500;color:'+saldoColor+'">'+fmt(saldo)+'</td>';
+    row += '<td class="'+vencClass(p)+'">'+fmtDate(p.vencimento)+diasLabel(p)+'</td>';
+    row += '<td>'+statusPill(st)+'</td>';
+    row += '<td style="display:flex;gap:4px;align-items:center;">';
+    if(st!=='pago') row += '<button class="'+marcarClass+'" onclick="marcarPago(''+p.id+'',''+tipo+'')">'+btnLabel+'</button>';
+    row += '<button class="btn-pend-edit" onclick="editPend(''+p.id+'')">✎</button>';
+    row += '<button class="btn-pend-del" onclick="deletePend(''+p.id+'')">×</button>';
+    row += '</td></tr>';
+    return row;
+  }
+
   const tbR = document.getElementById('body-receber');
   if(!receber.length) {
     tbR.innerHTML = '<tr><td colspan="8"><div class="pend-empty">Nenhuma conta a receber cadastrada.</div></td></tr>';
   } else {
-    tbR.innerHTML = receber.map(p=>{
-      const saldo = p.valorTotal - (p.valorPago||0);
-      const pct = Math.min(100, Math.round(((p.valorPago||0)/p.valorTotal)*100));
-      const st = getStatus(p);
-      return `<tr>
-        <td style="font-weight:500;">${p.cliente}</td>
-        <td style="color:var(--text2);font-size:12px;">${p.desc||'—'}</td>
-        <td>${fmt(p.valorTotal)}</td>
-        <td>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
-            <span style="font-size:12px;color:var(--green);min-width:36px;">${fmt(p.valorPago||0)}</span>
-          </div>
-        </td>
-        <td style="font-weight:500;color:${saldo>0?'var(--gold)':'var(--green)'}">${fmt(saldo)}</td>
-        <td class="${vencClass(p)}">${fmtDate(p.vencimento)}${diasLabel(p)}</td>
-        <td>${statusPill(st)}</td>
-        <td style="display:flex;gap:4px;align-items:center;">
-          ${st!=='pago'?`<button class="btn-marcar btn-marcar-pago" onclick="marcarPago('${p.id}','receber')">✓ Recebido</button>`:''}
-          <button class="btn-pend-edit" onclick="editPend('${p.id}')">✎</button>
-          <button class="btn-pend-del" onclick="deletePend('${p.id}')">×</button>
-        </td>
-      </tr>`;
-      }).join('');
-    return headerHtml + cardsHtml + '</div>';
-  }).join('');
+    tbR.innerHTML = receber.map(function(p){ return buildRow(p,'receber'); }).join('');
   }
 
-  // Tabela pagar
   const tbP = document.getElementById('body-pagar');
   if(!pagar.length) {
     tbP.innerHTML = '<tr><td colspan="8"><div class="pend-empty">Nenhuma conta a pagar cadastrada.</div></td></tr>';
   } else {
-    tbP.innerHTML = pagar.map(p=>{
-      const saldo = p.valorTotal - (p.valorPago||0);
-      const pct = Math.min(100, Math.round(((p.valorPago||0)/p.valorTotal)*100));
-      const st = getStatus(p);
-      return `<tr>
-        <td style="font-weight:500;">${p.cliente}</td>
-        <td style="color:var(--text2);font-size:12px;">${p.cat||'—'}</td>
-        <td>${fmt(p.valorTotal)}</td>
-        <td>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--teal)"></div></div>
-            <span style="font-size:12px;color:var(--teal);min-width:36px;">${fmt(p.valorPago||0)}</span>
-          </div>
-        </td>
-        <td style="font-weight:500;color:${saldo>0?'var(--red)':'var(--green)'}">${fmt(saldo)}</td>
-        <td class="${vencClass(p)}">${fmtDate(p.vencimento)}${diasLabel(p)}</td>
-        <td>${statusPill(st)}</td>
-        <td style="display:flex;gap:4px;align-items:center;">
-          ${st!=='pago'?`<button class="btn-marcar" onclick="marcarPago('${p.id}','pagar')">✓ Pago</button>`:''}
-          <button class="btn-pend-edit" onclick="editPend('${p.id}')">✎</button>
-          <button class="btn-pend-del" onclick="deletePend('${p.id}')">×</button>
-        </td>
-      </tr>`;
-    }).join('');
+    tbP.innerHTML = pagar.map(function(p){ return buildRow(p,'pagar'); }).join('');
   }
 }
 
@@ -2321,45 +2283,34 @@ function renderEventos() {
   const statusFiltro = document.getElementById('ev-filtro-status').value;
   const mesFiltro    = document.getElementById('ev-filtro-mes').value;
 
-  // Gerar timeline de 12 meses (6 passados + mês atual + 5 futuros)
+  // Timeline
   renderTimeline(mesFiltro);
 
   // Popular filtro de meses
   const mesesComEv = [...new Set(eventos.map(e=>e.data?e.data.slice(0,7):null).filter(Boolean))].sort().reverse();
-  const mesAtual = document.getElementById('ev-filtro-mes').value;
+  const mesAtualSel = document.getElementById('ev-filtro-mes').value;
   document.getElementById('ev-filtro-mes').innerHTML =
     '<option value="">Todos os meses</option>' +
-    mesesComEv.map(m=>`<option value="${m}" ${m===mesAtual?'selected':''}>${getMonthLabel(m)}</option>`).join('');
+    mesesComEv.map(function(m){ return '<option value="'+m+'"'+(m===mesAtualSel?' selected':'')+'>'+getMonthLabel(m)+'</option>'; }).join('');
 
-  let lista = [...eventos].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  if(statusFiltro) lista = lista.filter(e=>e.status===statusFiltro);
-  if(mesFiltro)    lista = lista.filter(e=>(e.data||'').startsWith(mesFiltro));
+  let lista = [...eventos].sort(function(a,b){ return (a.data||'').localeCompare(b.data||''); });
+  if(statusFiltro) lista = lista.filter(function(e){ return e.status===statusFiltro; });
+  if(mesFiltro)    lista = lista.filter(function(e){ return (e.data||'').startsWith(mesFiltro); });
 
   // KPIs
   const total = eventos.length;
-  const confirmados = eventos.filter(e=>e.status==='confirmado'||e.status==='andamento').length;
-  const receitaTotal = eventos.reduce((s,e)=>s+(e.valor||0),0);
-  const receitaRecebida = eventos.reduce((s,e)=>s+(e.parcelas||[]).filter(p=>p.pago).reduce((sp,p)=>sp+(p.valor||0),0),0);
+  const confirmados = eventos.filter(function(e){ return e.status==='confirmado'||e.status==='andamento'; }).length;
+  const receitaTotal = eventos.reduce(function(s,e){ return s+(e.valor||0); },0);
+  const receitaRecebida = eventos.reduce(function(s,e){
+    return s+(e.parcelas||[]).filter(function(p){ return p.pago; }).reduce(function(sp,p){ return sp+(p.valor||0); },0);
+  },0);
   const pendEv = receitaTotal - receitaRecebida;
 
-  document.getElementById('ev-kpi-grid').innerHTML = `
-    <div class="kpi-card" style="--accent:var(--teal)">
-      <div class="kpi-label">Total de eventos</div>
-      <div class="kpi-value teal">${total}</div>
-    </div>
-    <div class="kpi-card" style="--accent:var(--gold)">
-      <div class="kpi-label">Confirmados / Em andamento</div>
-      <div class="kpi-value gold">${confirmados}</div>
-    </div>
-    <div class="kpi-card" style="--accent:var(--green)">
-      <div class="kpi-label">Receita total contratada</div>
-      <div class="kpi-value green">${fmt(receitaTotal)}</div>
-    </div>
-    <div class="kpi-card" style="--accent:${pendEv>0?'var(--red)':'var(--green)'}">
-      <div class="kpi-label">Saldo a receber (eventos)</div>
-      <div class="kpi-value ${pendEv>0?'red':'green'}">${fmt(pendEv)}</div>
-    </div>
-  `;
+  document.getElementById('ev-kpi-grid').innerHTML =
+    '<div class="kpi-card" style="--accent:var(--teal)"><div class="kpi-label">Total de eventos</div><div class="kpi-value teal">'+total+'</div></div>'+
+    '<div class="kpi-card" style="--accent:var(--gold)"><div class="kpi-label">Confirmados / Em andamento</div><div class="kpi-value gold">'+confirmados+'</div></div>'+
+    '<div class="kpi-card" style="--accent:var(--green)"><div class="kpi-label">Receita total contratada</div><div class="kpi-value green">'+fmt(receitaTotal)+'</div></div>'+
+    '<div class="kpi-card" style="--accent:'+(pendEv>0?'var(--red)':'var(--green)')+'"><div class="kpi-label">Saldo a receber (eventos)</div><div class="kpi-value '+(pendEv>0?'red':'green')+'">'+fmt(pendEv)+'</div></div>';
 
   const grid = document.getElementById('ev-grid');
   if(!lista.length) {
@@ -2376,93 +2327,91 @@ function renderEventos() {
 
   // Agrupar por mês
   const porMes = {};
-  lista.forEach(ev => {
+  lista.forEach(function(ev) {
     const k = ev.data ? ev.data.slice(0,7) : 'sem-data';
     if(!porMes[k]) porMes[k] = [];
     porMes[k].push(ev);
   });
   const mesesOrdenados = Object.keys(porMes).sort();
+  const hoje = new Date();
+  const mesHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
 
-  grid.innerHTML = mesesOrdenados.map(mes => {
-    const hoje = new Date();
-    const mesHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+  let html = '';
+  mesesOrdenados.forEach(function(mes) {
     const isHoje = mes === mesHoje;
     const label = mes === 'sem-data' ? 'Sem data' : getMonthLabel(mes) + (mes.slice(0,4) !== String(new Date().getFullYear()) ? ' '+mes.slice(0,4) : '');
-    const headerHtml = `<div class="ev-section-header" ${isHoje?'style="--accent:var(--teal)"':''}><span style="${isHoje?'background:var(--teal);box-shadow:0 0 0 3px rgba(42,143,163,0.25);font-size:13px;padding:5px 18px;':'background:var(--bg3);color:var(--text2);'}">${isHoje ? '📅 Este mês — ' : ''}${label}</span></div><div class="ev-grid" style="margin-bottom:0">`;
-    const cardsHtml = porMes[mes].map(ev=>{
-    const [stClass, stLabel] = statusMap[ev.status]||statusMap['confirmado'];
-    const drinks = (ev.drinks||'').split(',').map(d=>d.trim()).filter(Boolean);
-    const parcelas = ev.parcelas||[];
-    const totalPago = parcelas.filter(p=>p.pago).reduce((s,p)=>s+(p.valor||0),0);
-    const saldo = (ev.valor||0) - totalPago;
-    const pct = ev.valor>0 ? Math.min(100,Math.round((totalPago/ev.valor)*100)) : 0;
+    const headerStyle = isHoje ? 'background:var(--teal);box-shadow:0 0 0 3px rgba(42,143,163,0.25);font-size:13px;padding:5px 18px;' : 'background:var(--bg3);color:var(--text2);';
+    html += '<div class="ev-section-header"><span style="'+headerStyle+'">'+(isHoje?'📅 Este mês — ':'')+label+'</span></div>';
+    html += '<div class="ev-grid" style="margin-bottom:0">';
 
-    const parcItems = parcelas.map((p,i)=>`
-      <div class="ev-pag-item ${p.pago?'ev-pag-done':''}">
-        <div style="flex:1;">
-          <div style="font-weight:500;color:var(--text);">${p.descricao||'Parcela '+(i+1)}</div>
-          <div style="color:var(--text2);font-size:11px;">${p.vencimento?'Venc: '+fmtDate(p.vencimento):''}</div>
-        </div>
-        <div style="font-weight:500;color:${p.pago?'var(--green)':'var(--text)'};">${fmt(p.valor||0)}</div>
-        <span class="ev-pag-badge ${p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend'}">${p.pago?'✓ Pago':'Pendente'}</span>
-        ${!p.pago?`<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela('${ev.id}',${i})">Dar baixa</button>`:''}
-      </div>
-    `).join('');
+    porMes[mes].forEach(function(ev) {
+      const stArr = statusMap[ev.status]||statusMap['confirmado'];
+      const stClass = stArr[0]; const stLabel = stArr[1];
+      const drinks = (ev.drinks||'').split(',').map(function(d){ return d.trim(); }).filter(Boolean);
+      const parcelas = ev.parcelas||[];
+      const totalPago = parcelas.filter(function(p){ return p.pago; }).reduce(function(s,p){ return s+(p.valor||0); },0);
+      const saldo = (ev.valor||0) - totalPago;
+      const pct = ev.valor>0 ? Math.min(100,Math.round((totalPago/ev.valor)*100)) : 0;
 
-    return `
-    <div class="ev-card${isHoje?' ev-card-hoje':''}" onclick="openDrawer('${ev.id}')" style="cursor:pointer;">
-      <div class="ev-card-header">
-        <div>
-          <div class="ev-nome" style="display:flex;align-items:center;gap:8px;">
-            🍹 ${ev.nome}
-            ${isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':''}
-          </div>
-          <div class="ev-data">
-            ${ev.data?fmtDate(ev.data):'—'}
-            ${ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):''}
-            ${ev.local?' · '+ev.local:''}
-          </div>
-          ${ev.cerimonialista?`<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: ${ev.cerimonialista}</div>`:''}
-        </div>
-        <span class="ev-status-pill ${stClass}">${stLabel}</span>
-      </div>
-      <div class="ev-card-body">
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
-          ${ev.horario?`<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>${ev.horario}${ev.horarioFim?' – '+ev.horarioFim:''}</strong></div>`:''}
-          <div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>${ev.pessoas||'—'}</strong> pessoas</div>
-          ${ev.cerimonialista?`<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>${ev.cerimonialista}</strong></div>`:''}
-        </div>
-        ${drinks.length?`<div class="ev-drinks">${drinks.map(d=>`<span class="ev-drink-tag">${d}</span>`).join('')}</div>`:''}
-        ${ev.obs?`<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg3);border-radius:6px;">${ev.obs}</div>`:''}
-        <div style="margin-top:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-            <span style="color:var(--text2)">Recebido</span>
-            <span style="color:var(--green)">${fmt(totalPago)} de ${fmt(ev.valor||0)}</span>
-          </div>
-          <div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:var(--green);border-radius:3px;transition:width 0.4s;"></div>
-          </div>
-        </div>
-      </div>
-      ${parcelas.length?`
-      <div class="ev-pagamentos">
-        <div class="ev-pag-title">Parcelas de pagamento</div>
-        ${parcItems}
-      </div>`:''}
-      <div class="ev-card-footer">
-        <div>
-          <div class="ev-valor-total">${fmt(ev.valor||0)}</div>
-          ${saldo>0?`<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">${fmt(saldo)}</span></div>`:'<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>'}
-        </div>
-        <div class="ev-actions" onclick="event.stopPropagation()">
-          <button class="ev-btn" onclick="event.stopPropagation();editEvento('${ev.id}')">✎ Editar</button>
-          <button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento('${ev.id}')">× Excluir</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+      let parcItems = '';
+      parcelas.forEach(function(p,i) {
+        parcItems += '<div class="ev-pag-item'+(p.pago?' ev-pag-done':'')+'">';
+        parcItems += '<div style="flex:1;"><div style="font-weight:500;color:var(--text);">'+(p.descricao||'Parcela '+(i+1))+'</div>';
+        parcItems += '<div style="color:var(--text2);font-size:11px;">'+(p.vencimento?'Venc: '+fmtDate(p.vencimento):'')+'</div></div>';
+        parcItems += '<div style="font-weight:500;color:'+(p.pago?'var(--green)':'var(--text)')+';">'+fmt(p.valor||0)+'</div>';
+        parcItems += '<span class="ev-pag-badge '+(p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend')+'">'+(p.pago?'✓ Pago':'Pendente')+'</span>';
+        if(!p.pago) parcItems += '<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela(''+ev.id+'','+i+')">Dar baixa</button>';
+        parcItems += '</div>';
+      });
+
+      let drinksHtml = '';
+      if(drinks.length) {
+        drinksHtml = '<div class="ev-drinks">';
+        drinks.forEach(function(d){ drinksHtml += '<span class="ev-drink-tag">'+d+'</span>'; });
+        drinksHtml += '</div>';
+      }
+
+      const cardClass = 'ev-card'+(isHoje?' ev-card-hoje':'');
+      let card = '<div class="'+cardClass+'" onclick="openDrawer(''+ev.id+'')" style="cursor:pointer;">';
+      card += '<div class="ev-card-header">';
+      card += '<div>';
+      card += '<div class="ev-nome" style="display:flex;align-items:center;gap:8px;">🍹 '+ev.nome+(isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':'')+'</div>';
+      card += '<div class="ev-data">'+(ev.data?fmtDate(ev.data):'—')+(ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):'')+(ev.local?' · '+ev.local:'')+'</div>';
+      if(ev.cerimonialista) card += '<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: '+ev.cerimonialista+'</div>';
+      card += '</div>';
+      card += '<span class="ev-status-pill '+stClass+'">'+stLabel+'</span>';
+      card += '</div>';
+      card += '<div class="ev-card-body">';
+      card += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">';
+      if(ev.horario) card += '<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>'+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:'')+'</strong></div>';
+      card += '<div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>'+(ev.pessoas||'—')+'</strong> pessoas</div>';
+      if(ev.cerimonialista) card += '<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>'+ev.cerimonialista+'</strong></div>';
+      card += '</div>';
+      card += drinksHtml;
+      if(ev.obs) card += '<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg3);border-radius:6px;">'+ev.obs+'</div>';
+      card += '<div style="margin-top:10px;">';
+      card += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text2)">Recebido</span><span style="color:var(--green)">'+fmt(totalPago)+' de '+fmt(ev.valor||0)+'</span></div>';
+      card += '<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--green);border-radius:3px;transition:width 0.4s;"></div></div>';
+      card += '</div></div>';
+      if(parcelas.length) {
+        card += '<div class="ev-pagamentos"><div class="ev-pag-title">Parcelas de pagamento</div>'+parcItems+'</div>';
+      }
+      card += '<div class="ev-card-footer">';
+      card += '<div><div class="ev-valor-total">'+fmt(ev.valor||0)+'</div>';
+      card += saldo>0 ? '<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">'+fmt(saldo)+'</span></div>' : '<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>';
+      card += '</div>';
+      card += '<div class="ev-actions" onclick="event.stopPropagation()">';
+      card += '<button class="ev-btn" onclick="event.stopPropagation();editEvento(''+ev.id+'')">✎ Editar</button>';
+      card += '<button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento(''+ev.id+'')">× Excluir</button>';
+      card += '</div></div></div>';
+
+      html += card;
+    });
+    html += '</div>';
+  });
+
+  grid.innerHTML = html;
 }
-
 /* ── MODAL EVENTO ── */
 let parcelasTemp = [];
 
@@ -2794,7 +2743,7 @@ function renderCkLists(ev) {
       <div class="ck-item ${item.checked?'checked':''}">
         <div class="ck-checkbox" onclick="toggleCkItem('${cat}',${i})">${item.checked?'✓':''}</div>
         <div class="ck-label">${item.nome}</div>
-        ${item.qty>1?`<span class="ck-qty">× ${item.qty}</span>`:''}
+        ${item.qty>1?'<span class="ck-qty">× '+item.qty+'</span>':''
         <button class="ck-del" onclick="delCkItem('${cat}',${i})">×</button>
       </div>
     `).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">Nenhum item ainda.</div>';
