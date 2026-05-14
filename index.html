@@ -935,12 +935,21 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Horário</label>
-        <input type="time" id="ev-horario" placeholder="Ex: 19:00">
+        <label>Horário de início</label>
+        <input type="time" id="ev-horario">
       </div>
+      <div class="form-group">
+        <label>Horário de término</label>
+        <input type="time" id="ev-horario-fim">
+      </div>
+    </div>
+    <div class="form-row">
       <div class="form-group">
         <label>Quantidade de pessoas</label>
         <input type="number" id="ev-pessoas" placeholder="Ex: 150" min="1">
+      </div>
+      <div class="form-group">
+        <!-- espaço reservado -->
       </div>
     </div>
     <div class="form-row">
@@ -1946,7 +1955,7 @@ function renderEventos() {
           <div class="ev-nome">🍹 ${ev.nome}</div>
           <div class="ev-data">
             ${ev.data?fmtDate(ev.data):'—'}
-            ${ev.horario?' às '+ev.horario:''}
+            ${ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):''}
             ${ev.local?' · '+ev.local:''}
           </div>
           ${ev.cerimonialista?`<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: ${ev.cerimonialista}</div>`:''}
@@ -1955,7 +1964,7 @@ function renderEventos() {
       </div>
       <div class="ev-card-body">
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
-          ${ev.horario?`<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>${ev.horario}</strong></div>`:''}
+          ${ev.horario?`<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>${ev.horario}${ev.horarioFim?' – '+ev.horarioFim:''}</strong></div>`:''}
           <div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>${ev.pessoas||'—'}</strong> pessoas</div>
           ${ev.cerimonialista?`<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>${ev.cerimonialista}</strong></div>`:''}
         </div>
@@ -2006,6 +2015,7 @@ function openEvModal() {
   document.getElementById('ev-obs').value = '';
   document.getElementById('ev-status').value = 'confirmado';
   document.getElementById('ev-horario').value = '';
+  document.getElementById('ev-horario-fim').value = '';
   document.getElementById('ev-cerimonialista').value = '';
   parcelasTemp = [];
   renderParcelasForm();
@@ -2027,6 +2037,7 @@ function editEvento(id) {
   document.getElementById('ev-obs').value = ev.obs||'';
   document.getElementById('ev-status').value = ev.status||'confirmado';
   document.getElementById('ev-horario').value = ev.horario||'';
+  document.getElementById('ev-horario-fim').value = ev.horarioFim||'';
   document.getElementById('ev-cerimonialista').value = ev.cerimonialista||'';
   parcelasTemp = JSON.parse(JSON.stringify(ev.parcelas||[]));
   renderParcelasForm();
@@ -2070,6 +2081,7 @@ async function saveEvento() {
   const nome           = document.getElementById('ev-nome').value.trim();
   const data           = document.getElementById('ev-data').value;
   const horario        = document.getElementById('ev-horario').value;
+  const horarioFim     = document.getElementById('ev-horario-fim').value;
   const local          = document.getElementById('ev-local').value.trim();
   const cerimonialista = document.getElementById('ev-cerimonialista').value.trim();
   const pessoas        = parseInt(document.getElementById('ev-pessoas').value)||0;
@@ -2080,7 +2092,7 @@ async function saveEvento() {
 
   if(!nome||!data||valor<=0) { showToast('Preencha nome, data e valor.','error'); return; }
 
-  const item = { nome, data, horario, local, cerimonialista, pessoas, drinks, valor, obs, status, parcelas: parcelasTemp };
+  const item = { nome, data, horario, horarioFim, local, cerimonialista, pessoas, drinks, valor, obs, status, parcelas: parcelasTemp };
   const btn = document.getElementById('btn-ev-confirm');
   btn.textContent = 'Salvando...'; btn.disabled = true;
 
