@@ -680,6 +680,222 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   0%, 100% { box-shadow: 0 0 0 0 rgba(42,143,163,0.4); }
   50%       { box-shadow: 0 0 0 5px rgba(42,143,163,0); }
 }
+
+/* ════ DRAWER DE DETALHES DO EVENTO ════ */
+.ev-drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+  z-index: 300;
+}
+.ev-drawer-overlay.open { display: block; }
+.ev-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(700px, 100vw);
+  background: var(--bg2);
+  border-left: 1px solid var(--border2);
+  z-index: 301;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.4);
+}
+.ev-drawer.open { transform: translateX(0); }
+
+/* Header do drawer */
+.drawer-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg3);
+}
+.drawer-header-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px;
+}
+.drawer-nome {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.2;
+}
+.drawer-close {
+  background: none; border: 1px solid var(--border); color: var(--text2);
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 0.15s; line-height: 1;
+}
+.drawer-close:hover { border-color: var(--red); color: var(--red); }
+.drawer-meta {
+  display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text2);
+}
+.drawer-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* Abas internas */
+.drawer-tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: var(--bg3); flex-shrink: 0; overflow-x: auto;
+}
+.drawer-tab {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--text2); padding: 12px 18px; font-size: 13px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.drawer-tab:hover { color: var(--teal); }
+.drawer-tab.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 500; }
+.drawer-tab .tab-badge {
+  display: inline-block; background: var(--teal); color: #fff;
+  font-size: 10px; border-radius: 10px; padding: 1px 6px; margin-left: 5px; vertical-align: middle;
+}
+.drawer-tab .tab-badge.done { background: var(--green); }
+.drawer-tab .tab-badge.warn { background: var(--gold); }
+
+/* Corpo do drawer */
+.drawer-body {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+}
+.drawer-panel { display: none; }
+.drawer-panel.active { display: block; }
+
+/* ── CHECKLIST ── */
+.ck-section { margin-bottom: 20px; }
+.ck-section-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.ck-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.ck-add-row {
+  display: flex; gap: 8px; margin-bottom: 8px;
+}
+.ck-add-row input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: var(--radius-sm); padding: 7px 10px; font-size: 13px;
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s;
+}
+.ck-add-row input:focus { border-color: var(--teal); }
+.ck-add-row input.qty { width: 70px; flex: none; text-align: center; }
+.ck-btn-add {
+  background: var(--teal); border: none; color: #fff;
+  padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px;
+  cursor: pointer; transition: background 0.15s; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+}
+.ck-btn-add:hover { background: var(--teal-dark); }
+.ck-list { display: flex; flex-direction: column; gap: 4px; }
+.ck-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.ck-item.checked { opacity: 0.55; }
+.ck-item.checked .ck-label { text-decoration: line-through; }
+.ck-checkbox {
+  width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border2);
+  background: transparent; cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;
+}
+.ck-item.checked .ck-checkbox { background: var(--green); border-color: var(--green); }
+.ck-label { flex: 1; font-size: 13px; color: var(--text); }
+.ck-qty {
+  font-size: 12px; color: var(--teal); font-weight: 500;
+  background: rgba(42,143,163,0.1); padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
+.ck-del {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 16px; padding: 0 4px; border-radius: 4px; transition: all 0.15s; line-height: 1;
+}
+.ck-del:hover { color: var(--red); background: rgba(216,90,48,0.1); }
+.ck-progress-bar { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 14px; }
+.ck-progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s; }
+
+/* ── MÃO DE OBRA ── */
+.mdo-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border); margin-bottom: 4px;
+}
+.mdo-nome { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
+.mdo-funcao { font-size: 12px; color: var(--text2); }
+.mdo-valor { font-size: 13px; color: var(--gold); font-weight: 500; white-space: nowrap; }
+.mdo-total-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: rgba(200,149,42,0.08); border: 1px solid rgba(200,149,42,0.2);
+  margin-top: 8px; font-size: 13px;
+}
+
+/* ── PASSO A PASSO ── */
+.step-item {
+  display: flex; gap: 14px; margin-bottom: 10px; position: relative;
+}
+.step-item::before {
+  content: ''; position: absolute;
+  left: 17px; top: 36px; bottom: -10px; width: 2px;
+  background: var(--border);
+}
+.step-item:last-child::before { display: none; }
+.step-num {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  transition: all 0.2s; cursor: pointer; position: relative; z-index: 1;
+}
+.step-item.step-done .step-num {
+  background: var(--green); border-color: var(--green); color: #fff;
+}
+.step-item.step-alert .step-num {
+  background: rgba(200,149,42,0.15); border-color: var(--gold); color: var(--gold);
+}
+.step-content { flex: 1; padding-top: 6px; }
+.step-title {
+  font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.step-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.step-tag {
+  font-size: 10px; padding: 1px 7px; border-radius: 10px;
+  background: rgba(42,143,163,0.15); color: var(--teal); font-weight: 500;
+}
+.step-tag.obrigatorio { background: rgba(216,90,48,0.15); color: var(--red); }
+.step-tag.financeiro  { background: rgba(200,149,42,0.15); color: var(--gold); }
+.step-check-btn {
+  background: none; border: 1px solid var(--border); color: var(--text3);
+  padding: 3px 10px; border-radius: var(--radius-sm); font-size: 11px;
+  cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; margin-top: 6px;
+}
+.step-check-btn:hover { border-color: var(--green); color: var(--green); }
+.step-item.step-done .step-check-btn { border-color: var(--green); color: var(--green); background: rgba(29,158,117,0.1); }
+
+/* ── RTD / DRINKS ── */
+.rtd-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 8px;
+}
+.rtd-drink-name { font-size: 14px; font-weight: 500; color: var(--teal); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.rtd-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+.rtd-label { color: var(--text2); }
+.rtd-val { color: var(--text); font-weight: 500; }
+.rtd-val.highlight { color: var(--teal); font-size: 15px; }
+.rtd-input-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.rtd-input-row label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+.rtd-input-row input {
+  width: 70px; background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+  border-radius: var(--radius-sm); padding: 5px 8px; font-size: 13px;
+  font-family: 'DM Sans', sans-serif; outline: none; text-align: center;
+  transition: border-color 0.15s;
+}
+.rtd-input-row input:focus { border-color: var(--teal); }
+.rtd-total-box {
+  background: linear-gradient(135deg, rgba(42,143,163,0.1), rgba(42,143,163,0.05));
+  border: 1px solid rgba(42,143,163,0.25); border-radius: var(--radius-sm);
+  padding: 14px; margin-top: 12px; text-align: center;
+}
+.rtd-total-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); margin-bottom: 4px; }
+.rtd-total-val { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--teal); }
+.rtd-safety { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+@media(max-width:600px){
+  .ev-drawer { width: 100vw; }
+  .drawer-body { padding: 16px; }
+}
 </style>
 </head>
 <body>
@@ -1140,6 +1356,99 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
   </div>
 </div>
+
+
+<!-- DRAWER DETALHES DO EVENTO -->
+<div class="ev-drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="ev-drawer" id="ev-drawer">
+  <div class="drawer-header">
+    <div class="drawer-header-top">
+      <div>
+        <div class="drawer-nome" id="drawer-nome">—</div>
+        <div class="drawer-meta" id="drawer-meta"></div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+    </div>
+  </div>
+  <div class="drawer-tabs" id="drawer-tabs">
+    <button class="drawer-tab active" onclick="switchDrawerTab('checklist',this)">📦 Checklist <span class="tab-badge" id="badge-checklist">0</span></button>
+    <button class="drawer-tab" onclick="switchDrawerTab('mdo',this)">👷 Mão de obra <span class="tab-badge warn" id="badge-mdo">0</span></button>
+    <button class="drawer-tab" onclick="switchDrawerTab('passos',this)">✅ Passo a passo <span class="tab-badge" id="badge-passos">0</span></button>
+    <button class="drawer-tab" onclick="switchDrawerTab('rtd',this)">🍹 Drinks RTD</button>
+  </div>
+  <div class="drawer-body">
+
+    <!-- PAINEL CHECKLIST -->
+    <div class="drawer-panel active" id="panel-checklist">
+      <div class="ck-progress-bar"><div class="ck-progress-fill" id="ck-progress" style="width:0%"></div></div>
+      <div class="ck-section">
+        <div class="ck-section-title">Equipamentos e materiais</div>
+        <div class="ck-add-row">
+          <input type="text" id="ck-item-nome" placeholder="Item (ex: balcão, coqueteleira...)">
+          <input type="number" id="ck-item-qty" class="qty" placeholder="Qtd" min="1" value="1">
+          <button class="ck-btn-add" onclick="addCkItem('equipamentos')">+ Add</button>
+        </div>
+        <div class="ck-list" id="ck-list-equipamentos"></div>
+      </div>
+      <div class="ck-section">
+        <div class="ck-section-title">Insumos e bebidas</div>
+        <div class="ck-add-row">
+          <input type="text" id="ck-ins-nome" placeholder="Item (ex: gelo, limão, xarope...)">
+          <input type="number" id="ck-ins-qty" class="qty" placeholder="Qtd" min="1" value="1">
+          <button class="ck-btn-add" onclick="addCkItem('insumos')">+ Add</button>
+        </div>
+        <div class="ck-list" id="ck-list-insumos"></div>
+      </div>
+      <div class="ck-section">
+        <div class="ck-section-title">Outros itens</div>
+        <div class="ck-add-row">
+          <input type="text" id="ck-out-nome" placeholder="Item diverso...">
+          <input type="number" id="ck-out-qty" class="qty" placeholder="Qtd" min="1" value="1">
+          <button class="ck-btn-add" onclick="addCkItem('outros')">+ Add</button>
+        </div>
+        <div class="ck-list" id="ck-list-outros"></div>
+      </div>
+    </div>
+
+    <!-- PAINEL MÃO DE OBRA -->
+    <div class="drawer-panel" id="panel-mdo">
+      <div class="ck-section">
+        <div class="ck-section-title">Equipe contratada</div>
+        <div class="ck-add-row" style="flex-wrap:wrap;gap:6px;">
+          <input type="text" id="mdo-nome-inp" placeholder="Nome" style="flex:2;min-width:120px;">
+          <input type="text" id="mdo-func-inp" placeholder="Função (ex: bartender)" style="flex:2;min-width:120px;">
+          <input type="number" id="mdo-val-inp" placeholder="R$ valor" style="flex:1;min-width:80px;" step="0.01" min="0">
+          <button class="ck-btn-add" onclick="addMdo()">+ Add</button>
+        </div>
+        <div id="mdo-list"></div>
+        <div id="mdo-total" style="display:none;" class="mdo-total-bar">
+          <span style="color:var(--text2);">Total mão de obra:</span>
+          <span id="mdo-total-val" style="color:var(--gold);font-weight:600;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL PASSO A PASSO -->
+    <div class="drawer-panel" id="panel-passos">
+      <div class="ck-progress-bar"><div class="ck-progress-fill" id="step-progress" style="width:0%"></div></div>
+      <div id="steps-list"></div>
+    </div>
+
+    <!-- PAINEL DRINKS RTD -->
+    <div class="drawer-panel" id="panel-rtd">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;padding:10px 14px;background:rgba(42,143,163,0.07);border-radius:var(--radius-sm);border:1px solid rgba(42,143,163,0.15);">
+        💡 Configure a quantidade de doses por garrafa e o fator de segurança para calcular automaticamente quantas garrafas levar.
+      </div>
+      <div id="rtd-drinks-list"></div>
+      <div class="rtd-total-box" id="rtd-total-box" style="display:none;">
+        <div class="rtd-total-label">Total de garrafas / unidades RTD</div>
+        <div class="rtd-total-val" id="rtd-total-val">0</div>
+        <div class="rtd-safety">Incluindo margem de segurança</div>
+      </div>
+    </div>
+
+  </div><!-- /drawer-body -->
+</div><!-- /ev-drawer -->
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -2096,12 +2405,12 @@ function renderEventos() {
         </div>
         <div style="font-weight:500;color:${p.pago?'var(--green)':'var(--text)'};">${fmt(p.valor||0)}</div>
         <span class="ev-pag-badge ${p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend'}">${p.pago?'✓ Pago':'Pendente'}</span>
-        ${!p.pago?`<button class="ev-pag-baixa" onclick="darBaixaParcela('${ev.id}',${i})">Dar baixa</button>`:''}
+        ${!p.pago?`<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela('${ev.id}',${i})">Dar baixa</button>`:''}
       </div>
     `).join('');
 
     return `
-    <div class="ev-card${isHoje?' ev-card-hoje':''}">
+    <div class="ev-card${isHoje?' ev-card-hoje':''}" onclick="openDrawer('${ev.id}')" style="cursor:pointer;">
       <div class="ev-card-header">
         <div>
           <div class="ev-nome" style="display:flex;align-items:center;gap:8px;">
@@ -2145,9 +2454,9 @@ function renderEventos() {
           <div class="ev-valor-total">${fmt(ev.valor||0)}</div>
           ${saldo>0?`<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">${fmt(saldo)}</span></div>`:'<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>'}
         </div>
-        <div class="ev-actions">
-          <button class="ev-btn" onclick="editEvento('${ev.id}')">✎ Editar</button>
-          <button class="ev-btn ev-btn-danger" onclick="deleteEvento('${ev.id}')">× Excluir</button>
+        <div class="ev-actions" onclick="event.stopPropagation()">
+          <button class="ev-btn" onclick="event.stopPropagation();editEvento('${ev.id}')">✎ Editar</button>
+          <button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento('${ev.id}')">× Excluir</button>
         </div>
       </div>
     </div>`;
@@ -2380,6 +2689,305 @@ function filtrarTimelineMes(mes) {
     sel.value = mes;
   }
   renderEventos();
+}
+
+
+/* ════════════════════════════════════════
+   DRAWER DE DETALHES DO EVENTO
+════════════════════════════════════════ */
+let drawerEvId = null;
+
+// Passos padrão rigorosos para qualquer evento
+const PASSOS_PADRAO = [
+  { titulo: 'Confirmação final com o cliente',       desc: 'Ligar/mensagem confirmando data, horário, local e número de pessoas. Confirmar drinks escolhidos e solicitações especiais.', tag: 'obrigatorio', done: false },
+  { titulo: 'Verificar contrato e pagamentos',        desc: 'Checar se há parcelas em aberto. Confirmar forma de pagamento do saldo restante.', tag: 'financeiro', done: false },
+  { titulo: 'Montar checklist de equipamentos',       desc: 'Conferir balcões, coqueteleiras, dosadores, gelo, recipientes e todos os itens da lista de checklist.', tag: 'obrigatorio', done: false },
+  { titulo: 'Calcular e separar drinks RTD',          desc: 'Verificar quantidade de garrafas/unidades de cada drink. Incluir margem de segurança de 15%. Separar e embalar.', tag: 'obrigatorio', done: false },
+  { titulo: 'Confirmar equipe / mão de obra',        desc: 'Contatar todos os freelancers. Confirmar presença, horário de chegada e local. Enviar endereço e instruções.', tag: 'obrigatorio', done: false },
+  { titulo: 'Preparar uniformes e visual da equipe',  desc: 'Verificar camisas, aventais, gravatas e acessórios de todos os integrantes. Passar/higienizar se necessário.', tag: '', done: false },
+  { titulo: 'Contato com o cerimonialista',           desc: 'Alinhar entrada, posicionamento do balcão, horário de início do serviço de drinks e protocolo do evento.', tag: '', done: false },
+  { titulo: 'Separar e testar equipamentos',          desc: 'Verificar bombonas de CO₂, bombas, gelo seco, refrigeração. Testar iluminação e decoração do balcão.', tag: 'obrigatorio', done: false },
+  { titulo: 'Logística de transporte',               desc: 'Organizar frete/transporte de todo o material. Confirmar motorista, horário de saída e rota até o local.', tag: 'obrigatorio', done: false },
+  { titulo: 'Montagem no local do evento',            desc: 'Chegar com antecedência mínima de 2h. Montar balcão, organizar drinks, testar apresentação antes dos convidados chegarem.', tag: 'obrigatorio', done: false },
+  { titulo: 'Briefing com a equipe no local',        desc: 'Reunir todos os freelancers. Explicar o cardápio, posições, protocolo de atendimento e horários do evento.', tag: 'obrigatorio', done: false },
+  { titulo: 'Registro fotográfico / videomaker',     desc: 'Garantir cobertura do evento para portfólio e redes sociais. Alinhar com videomaker se houver.', tag: '', done: false },
+  { titulo: 'Acerto financeiro final',                desc: 'Receber saldo restante. Pagar freelancers. Registrar tudo no sistema financeiro.', tag: 'financeiro', done: false },
+  { titulo: 'Desmontagem e inventário pós-evento',   desc: 'Recolher todo o material. Conferir checklist de retorno. Registrar itens danificados ou perdidos.', tag: 'obrigatorio', done: false },
+  { titulo: 'Feedback e pós-venda',                  desc: 'Enviar mensagem de agradecimento ao cliente. Solicitar depoimento/foto. Registrar aprendizados do evento.', tag: '', done: false },
+];
+
+function openDrawer(evId) {
+  drawerEvId = evId;
+  const ev = eventos.find(e=>e.id===evId);
+  if(!ev) return;
+
+  // Header
+  document.getElementById('drawer-nome').textContent = '🍹 ' + ev.nome;
+  const meta = [];
+  if(ev.data) meta.push(`<span>📅 ${fmtDate(ev.data)}${ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):''}</span>`);
+  if(ev.local) meta.push(`<span>📍 ${ev.local}</span>`);
+  if(ev.pessoas) meta.push(`<span>👥 ${ev.pessoas} pessoas</span>`);
+  if(ev.cerimonialista) meta.push(`<span>👰 ${ev.cerimonialista}</span>`);
+  document.getElementById('drawer-meta').innerHTML = meta.join('');
+
+  // Garantir estruturas
+  if(!ev.checklist) ev.checklist = { equipamentos:[], insumos:[], outros:[] };
+  if(!ev.mdo) ev.mdo = [];
+  if(!ev.passos) ev.passos = PASSOS_PADRAO.map(p=>({...p}));
+  if(!ev.rtdConfig) ev.rtdConfig = {};
+
+  renderCkLists(ev);
+  renderMdo(ev);
+  renderPassos(ev);
+  renderRtd(ev);
+  updateDrawerBadges(ev);
+
+  // Abrir
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('ev-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Ativar primeira aba
+  switchDrawerTab('checklist', document.querySelector('.drawer-tab'));
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('ev-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  drawerEvId = null;
+}
+
+function switchDrawerTab(tab, el) {
+  document.querySelectorAll('.drawer-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.drawer-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function updateDrawerBadges(ev) {
+  const ck = ev.checklist||{};
+  const allCk = [...(ck.equipamentos||[]),...(ck.insumos||[]),...(ck.outros||[])];
+  const ckDone = allCk.filter(i=>i.checked).length;
+  const ckTotal = allCk.length;
+  const bdCk = document.getElementById('badge-checklist');
+  bdCk.textContent = ckTotal ? `${ckDone}/${ckTotal}` : '0';
+  bdCk.className = 'tab-badge' + (ckDone===ckTotal&&ckTotal>0?' done':'');
+
+  const mdo = ev.mdo||[];
+  document.getElementById('badge-mdo').textContent = mdo.length;
+
+  const passos = ev.passos||[];
+  const pDone = passos.filter(p=>p.done).length;
+  const bdP = document.getElementById('badge-passos');
+  bdP.textContent = `${pDone}/${passos.length}`;
+  bdP.className = 'tab-badge' + (pDone===passos.length&&passos.length>0?' done':' warn');
+}
+
+/* ── CHECKLIST ── */
+function renderCkLists(ev) {
+  const ck = ev.checklist;
+  ['equipamentos','insumos','outros'].forEach(cat => {
+    const list = document.getElementById('ck-list-'+cat);
+    const items = ck[cat]||[];
+    list.innerHTML = items.map((item,i)=>`
+      <div class="ck-item ${item.checked?'checked':''}">
+        <div class="ck-checkbox" onclick="toggleCkItem('${cat}',${i})">${item.checked?'✓':''}</div>
+        <div class="ck-label">${item.nome}</div>
+        ${item.qty>1?`<span class="ck-qty">× ${item.qty}</span>`:''}
+        <button class="ck-del" onclick="delCkItem('${cat}',${i})">×</button>
+      </div>
+    `).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">Nenhum item ainda.</div>';
+  });
+  // Progress
+  const ck2 = ev.checklist;
+  const all = [...(ck2.equipamentos||[]),...(ck2.insumos||[]),...(ck2.outros||[])];
+  const pct = all.length ? Math.round(all.filter(i=>i.checked).length/all.length*100) : 0;
+  document.getElementById('ck-progress').style.width = pct+'%';
+}
+
+function addCkItem(cat) {
+  const prefMap = {equipamentos:'ck-item',insumos:'ck-ins',outros:'ck-out'};
+  const pref = prefMap[cat];
+  const nome = document.getElementById(pref+'-nome').value.trim();
+  const qty  = parseInt(document.getElementById(pref+'-qty').value)||1;
+  if(!nome) return;
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  if(!ev.checklist) ev.checklist={equipamentos:[],insumos:[],outros:[]};
+  ev.checklist[cat].push({nome,qty,checked:false});
+  document.getElementById(pref+'-nome').value='';
+  document.getElementById(pref+'-qty').value='1';
+  saveDrawerData(ev);
+  renderCkLists(ev);
+  updateDrawerBadges(ev);
+}
+
+function toggleCkItem(cat, idx) {
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  ev.checklist[cat][idx].checked = !ev.checklist[cat][idx].checked;
+  saveDrawerData(ev);
+  renderCkLists(ev);
+  updateDrawerBadges(ev);
+}
+
+function delCkItem(cat, idx) {
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  ev.checklist[cat].splice(idx,1);
+  saveDrawerData(ev);
+  renderCkLists(ev);
+  updateDrawerBadges(ev);
+}
+
+/* ── MÃO DE OBRA ── */
+function renderMdo(ev) {
+  const mdo = ev.mdo||[];
+  const list = document.getElementById('mdo-list');
+  list.innerHTML = mdo.map((m,i)=>`
+    <div class="mdo-item">
+      <div style="flex:1;">
+        <div class="mdo-nome">${m.nome}</div>
+        <div class="mdo-funcao">${m.funcao||'—'}</div>
+      </div>
+      <div class="mdo-valor">${fmt(m.valor||0)}</div>
+      <button class="ck-del" onclick="delMdo(${i})">×</button>
+    </div>
+  `).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">Nenhum colaborador ainda.</div>';
+
+  const total = mdo.reduce((s,m)=>s+(m.valor||0),0);
+  const totalEl = document.getElementById('mdo-total');
+  if(mdo.length) {
+    totalEl.style.display='flex';
+    document.getElementById('mdo-total-val').textContent = fmt(total);
+  } else { totalEl.style.display='none'; }
+}
+
+function addMdo() {
+  const nome  = document.getElementById('mdo-nome-inp').value.trim();
+  const func  = document.getElementById('mdo-func-inp').value.trim();
+  const valor = parseFloat(document.getElementById('mdo-val-inp').value)||0;
+  if(!nome) return;
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  if(!ev.mdo) ev.mdo=[];
+  ev.mdo.push({nome,funcao:func,valor});
+  document.getElementById('mdo-nome-inp').value='';
+  document.getElementById('mdo-func-inp').value='';
+  document.getElementById('mdo-val-inp').value='';
+  saveDrawerData(ev);
+  renderMdo(ev);
+  updateDrawerBadges(ev);
+}
+
+function delMdo(idx) {
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  ev.mdo.splice(idx,1);
+  saveDrawerData(ev);
+  renderMdo(ev);
+  updateDrawerBadges(ev);
+}
+
+/* ── PASSO A PASSO ── */
+function renderPassos(ev) {
+  const passos = ev.passos||[];
+  const list = document.getElementById('steps-list');
+  const done = passos.filter(p=>p.done).length;
+  document.getElementById('step-progress').style.width = passos.length ? Math.round(done/passos.length*100)+'%' : '0%';
+
+  const tagMap = {
+    obrigatorio: '<span class="step-tag obrigatorio">Obrigatório</span>',
+    financeiro:  '<span class="step-tag financeiro">Financeiro</span>',
+    '':          '',
+  };
+
+  list.innerHTML = passos.map((p,i)=>`
+    <div class="step-item ${p.done?'step-done':''}">
+      <div class="step-num" onclick="toggleStep(${i})">${p.done?'✓':(i+1)}</div>
+      <div class="step-content">
+        <div class="step-title">
+          ${p.titulo}
+          ${tagMap[p.tag||'']||''}
+        </div>
+        <div class="step-desc">${p.desc}</div>
+        <button class="step-check-btn" onclick="toggleStep(${i})">
+          ${p.done?'✓ Concluído — clique para desfazer':'Marcar como concluído'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleStep(idx) {
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  ev.passos[idx].done = !ev.passos[idx].done;
+  saveDrawerData(ev);
+  renderPassos(ev);
+  updateDrawerBadges(ev);
+}
+
+/* ── DRINKS RTD ── */
+function renderRtd(ev) {
+  const drinks = (ev.drinks||'').split(',').map(d=>d.trim()).filter(Boolean);
+  const config = ev.rtdConfig||{};
+  const pessoas = ev.pessoas||0;
+  const list = document.getElementById('rtd-drinks-list');
+
+  if(!drinks.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:16px;text-align:center;">Nenhum drink cadastrado no evento.<br>Edite o evento e adicione os drinks.</div>';
+    document.getElementById('rtd-total-box').style.display='none';
+    return;
+  }
+
+  let totalGarrafas = 0;
+  list.innerHTML = drinks.map(drink => {
+    const cfg = config[drink]||{dosesGarrafa:1, dosesPessoa:1, seguranca:15};
+    const dosesTotais = Math.ceil(pessoas * cfg.dosesPessoa);
+    const garrafas = Math.ceil(dosesTotais / cfg.dosesGarrafa * (1 + cfg.seguranca/100));
+    totalGarrafas += garrafas;
+    return `
+    <div class="rtd-card">
+      <div class="rtd-drink-name">🍹 ${drink}</div>
+      <div class="rtd-row">
+        <span class="rtd-label">Doses estimadas (${pessoas} pessoas)</span>
+        <span class="rtd-val">${dosesTotais} doses</span>
+      </div>
+      <div class="rtd-row">
+        <span class="rtd-label">Garrafas / unidades necessárias</span>
+        <span class="rtd-val highlight">${garrafas} un.</span>
+      </div>
+      <div class="rtd-input-row">
+        <label>Doses/garrafa:</label>
+        <input type="number" min="1" value="${cfg.dosesGarrafa}"
+          onchange="updateRtdConfig('${drink}','dosesGarrafa',this.value)">
+        <label style="margin-left:8px;">Doses/pessoa:</label>
+        <input type="number" min="1" value="${cfg.dosesPessoa}" step="0.5"
+          onchange="updateRtdConfig('${drink}','dosesPessoa',this.value)">
+        <label style="margin-left:8px;">Margem %:</label>
+        <input type="number" min="0" max="100" value="${cfg.seguranca}"
+          onchange="updateRtdConfig('${drink}','seguranca',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rtd-total-box').style.display = 'block';
+  document.getElementById('rtd-total-val').textContent = totalGarrafas + ' un. total';
+}
+
+function updateRtdConfig(drink, campo, valor) {
+  const ev = eventos.find(e=>e.id===drawerEvId);
+  if(!ev.rtdConfig) ev.rtdConfig={};
+  if(!ev.rtdConfig[drink]) ev.rtdConfig[drink]={dosesGarrafa:1,dosesPessoa:1,seguranca:15};
+  ev.rtdConfig[drink][campo] = parseFloat(valor)||0;
+  saveDrawerData(ev);
+  renderRtd(ev);
+}
+
+/* ── SALVAR DRAWER ── */
+async function saveDrawerData(ev) {
+  try {
+    if(fbReady && ev.id && !ev.id.startsWith('local-')) {
+      const {id, ...data} = ev;
+      await window._setDoc(window._doc(window._db, colEventos, ev.id), data);
+    }
+  } catch(e) { console.error('Erro ao salvar drawer:', e); }
 }
 
 </script>
