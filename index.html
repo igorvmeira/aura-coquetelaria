@@ -2103,9 +2103,9 @@ function renderPendencias() {
     row += '<td class="'+vencClass(p)+'">'+fmtDate(p.vencimento)+diasLabel(p)+'</td>';
     row += '<td>'+statusPill(st)+'</td>';
     row += '<td style="display:flex;gap:4px;align-items:center;">';
-    if(st!=='pago') row += '<button class="'+marcarClass+'" onclick="marcarPago(''+p.id+'',''+tipo+'')">'+btnLabel+'</button>';
-    row += '<button class="btn-pend-edit" onclick="editPend(''+p.id+'')">✎</button>';
-    row += '<button class="btn-pend-del" onclick="deletePend(''+p.id+'')">×</button>';
+    if(st!=='pago') row += '<button class="'+marcarClass+'" onclick="marcarPago(\'' + p.id + '\',\'' + tipo + '\')">'+btnLabel+'</button>';
+    row += '<button class="btn-pend-edit" onclick="editPend(\'' + p.id + '\')">✎</button>';
+    row += '<button class="btn-pend-del" onclick="deletePend(\'' + p.id + '\')">×</button>';
     row += '</td></tr>';
     return row;
   }
@@ -2360,7 +2360,7 @@ function renderEventos() {
         parcItems += '<div style="color:var(--text2);font-size:11px;">'+(p.vencimento?'Venc: '+fmtDate(p.vencimento):'')+'</div></div>';
         parcItems += '<div style="font-weight:500;color:'+(p.pago?'var(--green)':'var(--text)')+';">'+fmt(p.valor||0)+'</div>';
         parcItems += '<span class="ev-pag-badge '+(p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend')+'">'+(p.pago?'✓ Pago':'Pendente')+'</span>';
-        if(!p.pago) parcItems += '<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela(''+ev.id+'','+i+')">Dar baixa</button>';
+        if(!p.pago) parcItems += '<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela(\'' + ev.id + '\',' + i + ')">Dar baixa</button>';
         parcItems += '</div>';
       });
 
@@ -2372,7 +2372,7 @@ function renderEventos() {
       }
 
       const cardClass = 'ev-card'+(isHoje?' ev-card-hoje':'');
-      let card = '<div class="'+cardClass+'" onclick="openDrawer(''+ev.id+'')" style="cursor:pointer;">';
+      let card = '<div class="'+cardClass+'" onclick="openDrawer(\'' + ev.id + '\')" style="cursor:pointer;">';
       card += '<div class="ev-card-header">';
       card += '<div>';
       card += '<div class="ev-nome" style="display:flex;align-items:center;gap:8px;">🍹 '+ev.nome+(isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':'')+'</div>';
@@ -2401,8 +2401,8 @@ function renderEventos() {
       card += saldo>0 ? '<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">'+fmt(saldo)+'</span></div>' : '<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>';
       card += '</div>';
       card += '<div class="ev-actions" onclick="event.stopPropagation()">';
-      card += '<button class="ev-btn" onclick="event.stopPropagation();editEvento(''+ev.id+'')">✎ Editar</button>';
-      card += '<button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento(''+ev.id+'')">× Excluir</button>';
+      card += '<button class="ev-btn" onclick="event.stopPropagation();editEvento(\'' + ev.id + '\')">✎ Editar</button>';
+      card += '<button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento(\'' + ev.id + '\')">× Excluir</button>';
       card += '</div></div></div>';
 
       html += card;
@@ -2743,7 +2743,7 @@ function renderCkLists(ev) {
       <div class="ck-item ${item.checked?'checked':''}">
         <div class="ck-checkbox" onclick="toggleCkItem('${cat}',${i})">${item.checked?'✓':''}</div>
         <div class="ck-label">${item.nome}</div>
-        ${item.qty>1?'<span class="ck-qty">× '+item.qty+'</span>':''
+        ${item.qty>1?'<span class="ck-qty">× '+item.qty+'</span>':''}
         <button class="ck-del" onclick="delCkItem('${cat}',${i})">×</button>
       </div>
     `).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">Nenhum item ainda.</div>';
