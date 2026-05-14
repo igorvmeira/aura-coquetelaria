@@ -1443,11 +1443,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <!-- PAINEL DRINKS RTD -->
     <div class="drawer-panel" id="panel-rtd">
       <div style="font-size:12px;color:var(--text2);margin-bottom:16px;padding:10px 14px;background:rgba(42,143,163,0.07);border-radius:var(--radius-sm);border:1px solid rgba(42,143,163,0.15);">
-        💡 Configure a quantidade de doses por garrafa e o fator de segurança para calcular automaticamente quantas garrafas levar.
+        💡 Configure quantos mL por litro cada drink usa e o consumo por pessoa (em mL) para calcular automaticamente quantos litros produzir.
       </div>
       <div id="rtd-drinks-list"></div>
       <div class="rtd-total-box" id="rtd-total-box" style="display:none;">
-        <div class="rtd-total-label">Total de garrafas / unidades RTD</div>
+        <div class="rtd-total-label">Total de litros a produzir</div>
         <div class="rtd-total-val" id="rtd-total-val">0</div>
         <div class="rtd-safety">Incluindo margem de segurança</div>
       </div>
@@ -2657,7 +2657,7 @@ const PASSOS_PADRAO = [
   { titulo: 'Confirmação final com o cliente',       desc: 'Ligar/mensagem confirmando data, horário, local e número de pessoas. Confirmar drinks escolhidos e solicitações especiais.', tag: 'obrigatorio', done: false },
   { titulo: 'Verificar contrato e pagamentos',        desc: 'Checar se há parcelas em aberto. Confirmar forma de pagamento do saldo restante.', tag: 'financeiro', done: false },
   { titulo: 'Montar checklist de equipamentos',       desc: 'Conferir balcões, coqueteleiras, dosadores, gelo, recipientes e todos os itens da lista de checklist.', tag: 'obrigatorio', done: false },
-  { titulo: 'Calcular e separar drinks RTD',          desc: 'Verificar quantidade de garrafas/unidades de cada drink. Incluir margem de segurança de 15%. Separar e embalar.', tag: 'obrigatorio', done: false },
+  { titulo: 'Calcular e separar drinks RTD',          desc: 'Calcular litros necessários de cada drink RTD. Incluir margem de segurança de 15%. Produzir, embalsar e refrigerar.', tag: 'obrigatorio', done: false },
   { titulo: 'Confirmar equipe / mão de obra',        desc: 'Contatar todos os freelancers. Confirmar presença, horário de chegada e local. Enviar endereço e instruções.', tag: 'obrigatorio', done: false },
   { titulo: 'Preparar uniformes e visual da equipe',  desc: 'Verificar camisas, aventais, gravatas e acessórios de todos os integrantes. Passar/higienizar se necessário.', tag: '', done: false },
   { titulo: 'Contato com o cerimonialista',           desc: 'Alinhar entrada, posicionamento do balcão, horário de início do serviço de drinks e protocolo do evento.', tag: '', done: false },
@@ -2891,30 +2891,30 @@ function renderRtd(ev) {
     return;
   }
 
-  let totalGarrafas = 0;
+  let totalLitros = 0;
   list.innerHTML = drinks.map(drink => {
-    const cfg = config[drink]||{dosesGarrafa:1, dosesPessoa:1, seguranca:15};
-    const dosesTotais = Math.ceil(pessoas * cfg.dosesPessoa);
-    const garrafas = Math.ceil(dosesTotais / cfg.dosesGarrafa * (1 + cfg.seguranca/100));
-    totalGarrafas += garrafas;
+    // mlPorPessoa: quantos mL cada pessoa consome deste drink
+    // mlPorLitro: sempre 1000 (1 litro = 1000 mL), mas deixamos configurável para facilitar
+    const cfg = config[drink]||{mlPorPessoa:200, seguranca:15};
+    const mlTotal   = pessoas * cfg.mlPorPessoa;
+    const litrosBruto = mlTotal / 1000;
+    const litros    = Math.ceil(litrosBruto * (1 + cfg.seguranca/100) * 10) / 10; // arredonda p/ 0.1L
+    totalLitros += litros;
     return `
     <div class="rtd-card">
       <div class="rtd-drink-name">🍹 ${drink}</div>
       <div class="rtd-row">
-        <span class="rtd-label">Doses estimadas (${pessoas} pessoas)</span>
-        <span class="rtd-val">${dosesTotais} doses</span>
+        <span class="rtd-label">Consumo estimado (${pessoas} pessoas × ${cfg.mlPorPessoa}mL)</span>
+        <span class="rtd-val">${mlTotal} mL = ${litrosBruto.toFixed(1)} L</span>
       </div>
       <div class="rtd-row">
-        <span class="rtd-label">Garrafas / unidades necessárias</span>
-        <span class="rtd-val highlight">${garrafas} un.</span>
+        <span class="rtd-label">Com margem de segurança (${cfg.seguranca}%)</span>
+        <span class="rtd-val highlight">${litros.toFixed(1)} litros</span>
       </div>
       <div class="rtd-input-row">
-        <label>Doses/garrafa:</label>
-        <input type="number" min="1" value="${cfg.dosesGarrafa}"
-          onchange="updateRtdConfig('${drink}','dosesGarrafa',this.value)">
-        <label style="margin-left:8px;">Doses/pessoa:</label>
-        <input type="number" min="1" value="${cfg.dosesPessoa}" step="0.5"
-          onchange="updateRtdConfig('${drink}','dosesPessoa',this.value)">
+        <label>mL por pessoa:</label>
+        <input type="number" min="10" step="10" value="${cfg.mlPorPessoa}"
+          onchange="updateRtdConfig('${drink}','mlPorPessoa',this.value)">
         <label style="margin-left:8px;">Margem %:</label>
         <input type="number" min="0" max="100" value="${cfg.seguranca}"
           onchange="updateRtdConfig('${drink}','seguranca',this.value)">
@@ -2923,13 +2923,13 @@ function renderRtd(ev) {
   }).join('');
 
   document.getElementById('rtd-total-box').style.display = 'block';
-  document.getElementById('rtd-total-val').textContent = totalGarrafas + ' un. total';
+  document.getElementById('rtd-total-val').textContent = totalLitros.toFixed(1) + ' L total';
 }
 
 function updateRtdConfig(drink, campo, valor) {
   const ev = eventos.find(e=>e.id===drawerEvId);
   if(!ev.rtdConfig) ev.rtdConfig={};
-  if(!ev.rtdConfig[drink]) ev.rtdConfig[drink]={dosesGarrafa:1,dosesPessoa:1,seguranca:15};
+  if(!ev.rtdConfig[drink]) ev.rtdConfig[drink]={mlPorPessoa:200, seguranca:15};
   ev.rtdConfig[drink][campo] = parseFloat(valor)||0;
   saveDrawerData(ev);
   renderRtd(ev);
