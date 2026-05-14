@@ -456,7 +456,13 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 @media (max-width: 500px) { .pend-kpi-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ════ EVENTOS ════ */
-.ev-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(340px,1fr)); gap: 16px; margin-bottom: 1.5rem; }
+.ev-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(380px,1fr)); gap: 16px; margin-bottom: 1.5rem; }
+@media(min-width:1200px){ .ev-grid { grid-template-columns: repeat(3,1fr); } }
+#ev-grid { display: block; }
+#ev-grid .ev-grid { margin-bottom: 1.5rem; }
+
+@media(min-width:900px) and (max-width:1199px){ .ev-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:899px) { .ev-grid { grid-template-columns: 1fr; } }
 .ev-card {
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
@@ -1187,7 +1193,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       <button class="btn-primary btn" onclick="openEvModal()">+ Novo Evento</button>
     </div>
 
-    <div class="ev-grid" id="ev-grid">
+    <div id="ev-grid">
       <div class="loading"><div class="spinner"></div> Carregando eventos...</div>
     </div>
 
