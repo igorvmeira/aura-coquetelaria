@@ -2690,6 +2690,13 @@ function openDrawer(evId) {
   if(!ev.mdo) ev.mdo = [];
   if(!ev.passos) ev.passos = PASSOS_PADRAO.map(p=>({...p}));
   if(!ev.rtdConfig) ev.rtdConfig = {};
+  // Migrar configs antigas (formato doses) para novo formato (litros/mL)
+  Object.keys(ev.rtdConfig).forEach(drink => {
+    const cfg = ev.rtdConfig[drink];
+    if(cfg.dosesGarrafa !== undefined || cfg.dosesPessoa !== undefined) {
+      ev.rtdConfig[drink] = { mlPorPessoa: 200, seguranca: cfg.seguranca||15 };
+    }
+  });
 
   renderCkLists(ev);
   renderMdo(ev);
