@@ -553,6 +553,133 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 }
 .btn-rm-parcela:hover { color:var(--red); }
 @media(max-width:900px){ .ev-kpi-grid{grid-template-columns:repeat(2,1fr);} }
+
+/* ════ TIMELINE MENSAL ════ */
+.ev-timeline-wrap {
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.ev-timeline {
+  display: flex;
+  gap: 0;
+  min-width: max-content;
+  position: relative;
+  padding: 0 8px;
+}
+.ev-timeline::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.ev-tl-month {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  padding: 0 4px;
+  transition: transform 0.15s;
+}
+.ev-tl-month:hover { transform: translateY(-2px); }
+.ev-tl-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  background: var(--bg2);
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 19px;
+}
+.ev-tl-month.has-event .ev-tl-dot {
+  width: 22px; height: 22px;
+  background: var(--teal);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(42,143,163,0.2);
+  margin-top: 17px;
+}
+.ev-tl-month.is-hoje .ev-tl-dot {
+  border-color: var(--gold);
+  background: var(--gold);
+  box-shadow: 0 0 0 4px rgba(200,149,42,0.25);
+}
+.ev-tl-month.selected .ev-tl-dot {
+  box-shadow: 0 0 0 5px rgba(42,143,163,0.4);
+  transform: scale(1.15);
+}
+.ev-tl-month.has-event.selected .ev-tl-dot {
+  background: var(--teal-mid);
+}
+.ev-tl-label {
+  font-size: 11px;
+  color: var(--text3);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.3;
+}
+.ev-tl-month.has-event .ev-tl-label { color: var(--teal); font-weight: 500; }
+.ev-tl-month.is-hoje .ev-tl-label   { color: var(--gold); font-weight: 500; }
+.ev-tl-month.selected .ev-tl-label  { color: var(--text); }
+.ev-tl-count {
+  font-size: 10px;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.6;
+}
+.ev-tl-month:not(.has-event) .ev-tl-count { display: none; }
+.ev-tl-month.is-hoje:not(.has-event) .ev-tl-dot { background: var(--gold); border-color: var(--gold); }
+.ev-section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.5rem 0 1rem;
+  font-size: 13px; color: var(--text2);
+}
+.ev-section-header::before, .ev-section-header::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.ev-section-header span {
+  background: var(--teal); color: #fff;
+  padding: 3px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+
+/* ════ CARD MÊS ATUAL ════ */
+.ev-card.ev-card-hoje {
+  border-color: var(--teal);
+  background: linear-gradient(135deg, rgba(42,143,163,0.08) 0%, var(--bg2) 60%);
+  box-shadow: 0 0 0 1px rgba(42,143,163,0.3), 0 4px 24px rgba(42,143,163,0.12);
+}
+.ev-card.ev-card-hoje .ev-card-header {
+  border-bottom-color: rgba(42,143,163,0.2);
+}
+.ev-card.ev-card-hoje:hover {
+  border-color: var(--teal-mid);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(42,143,163,0.5), 0 8px 32px rgba(42,143,163,0.2);
+}
+.ev-badge-mes-atual {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--teal); color: #fff;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  padding: 2px 8px; border-radius: 20px;
+  text-transform: uppercase; white-space: nowrap;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(42,143,163,0.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(42,143,163,0); }
+}
 </style>
 </head>
 <body>
@@ -822,6 +949,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="page" id="page-eventos">
 
     <div class="ev-kpi-grid" id="ev-kpi-grid"></div>
+
+    <!-- TIMELINE MENSAL -->
+    <div class="ev-timeline-wrap">
+      <div class="ev-timeline" id="ev-timeline"></div>
+    </div>
 
     <div class="ev-top-bar">
       <div class="ev-filters">
@@ -1685,7 +1817,9 @@ function renderPendencias() {
           <button class="btn-pend-del" onclick="deletePend('${p.id}')">×</button>
         </td>
       </tr>`;
-    }).join('');
+      }).join('');
+    return headerHtml + cardsHtml + '</div>';
+  }).join('');
   }
 
   // Tabela pagar
@@ -1878,12 +2012,15 @@ function renderEventos() {
   const statusFiltro = document.getElementById('ev-filtro-status').value;
   const mesFiltro    = document.getElementById('ev-filtro-mes').value;
 
+  // Gerar timeline de 12 meses (6 passados + mês atual + 5 futuros)
+  renderTimeline(mesFiltro);
+
   // Popular filtro de meses
-  const meses = [...new Set(eventos.map(e=>e.data?e.data.slice(0,7):null).filter(Boolean))].sort().reverse();
+  const mesesComEv = [...new Set(eventos.map(e=>e.data?e.data.slice(0,7):null).filter(Boolean))].sort().reverse();
   const mesAtual = document.getElementById('ev-filtro-mes').value;
   document.getElementById('ev-filtro-mes').innerHTML =
     '<option value="">Todos os meses</option>' +
-    meses.map(m=>`<option value="${m}" ${m===mesAtual?'selected':''}>${getMonthLabel(m)}</option>`).join('');
+    mesesComEv.map(m=>`<option value="${m}" ${m===mesAtual?'selected':''}>${getMonthLabel(m)}</option>`).join('');
 
   let lista = [...eventos].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
   if(statusFiltro) lista = lista.filter(e=>e.status===statusFiltro);
@@ -1928,7 +2065,22 @@ function renderEventos() {
     cancelado:  ['ev-cancelado', 'Cancelado'],
   };
 
-  grid.innerHTML = lista.map(ev=>{
+  // Agrupar por mês
+  const porMes = {};
+  lista.forEach(ev => {
+    const k = ev.data ? ev.data.slice(0,7) : 'sem-data';
+    if(!porMes[k]) porMes[k] = [];
+    porMes[k].push(ev);
+  });
+  const mesesOrdenados = Object.keys(porMes).sort();
+
+  grid.innerHTML = mesesOrdenados.map(mes => {
+    const hoje = new Date();
+    const mesHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
+    const isHoje = mes === mesHoje;
+    const label = mes === 'sem-data' ? 'Sem data' : getMonthLabel(mes) + (mes.slice(0,4) !== String(new Date().getFullYear()) ? ' '+mes.slice(0,4) : '');
+    const headerHtml = `<div class="ev-section-header" ${isHoje?'style="--accent:var(--teal)"':''}><span style="${isHoje?'background:var(--teal);box-shadow:0 0 0 3px rgba(42,143,163,0.25);font-size:13px;padding:5px 18px;':'background:var(--bg3);color:var(--text2);'}">${isHoje ? '📅 Este mês — ' : ''}${label}</span></div><div class="ev-grid" style="margin-bottom:0">`;
+    const cardsHtml = porMes[mes].map(ev=>{
     const [stClass, stLabel] = statusMap[ev.status]||statusMap['confirmado'];
     const drinks = (ev.drinks||'').split(',').map(d=>d.trim()).filter(Boolean);
     const parcelas = ev.parcelas||[];
@@ -1949,10 +2101,13 @@ function renderEventos() {
     `).join('');
 
     return `
-    <div class="ev-card">
+    <div class="ev-card${isHoje?' ev-card-hoje':''}">
       <div class="ev-card-header">
         <div>
-          <div class="ev-nome">🍹 ${ev.nome}</div>
+          <div class="ev-nome" style="display:flex;align-items:center;gap:8px;">
+            🍹 ${ev.nome}
+            ${isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':''}
+          </div>
           <div class="ev-data">
             ${ev.data?fmtDate(ev.data):'—'}
             ${ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):''}
@@ -2163,6 +2318,68 @@ async function deleteEvento(id) {
     renderEventos();
     showToast('Evento excluído.','success');
   } catch(e) { showToast('Erro: '+e.message,'error'); }
+}
+
+
+/* ── TIMELINE MENSAL ── */
+function renderTimeline(mesFiltroAtivo) {
+  const hoje = new Date();
+  const anoHoje = hoje.getFullYear();
+  const mesHoje = hoje.getMonth(); // 0-based
+
+  // Montar 14 meses: 4 anteriores + atual + 9 futuros
+  const meses = [];
+  for(let i = -4; i <= 9; i++) {
+    const d = new Date(anoHoje, mesHoje + i, 1);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    meses.push(key);
+  }
+
+  // Contar eventos por mês
+  const contagem = {};
+  eventos.forEach(e => {
+    if(e.data) {
+      const k = e.data.slice(0,7);
+      contagem[k] = (contagem[k]||0) + 1;
+    }
+  });
+
+  const mesHojeKey = anoHoje+'-'+String(mesHoje+1).padStart(2,'0');
+
+  const tl = document.getElementById('ev-timeline');
+  tl.innerHTML = meses.map(m => {
+    const hasEv  = !!contagem[m];
+    const isHoje = m === mesHojeKey;
+    const isSel  = m === mesFiltroAtivo;
+    const count  = contagem[m]||0;
+    const [ano, mesN] = m.split('-');
+    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const label = nomes[parseInt(mesN)-1];
+    const anoLabel = ano !== String(anoHoje) ? `<br><span style="font-size:10px;opacity:0.7;">${ano}</span>` : '';
+    const classes = ['ev-tl-month', hasEv?'has-event':'', isHoje?'is-hoje':'', isSel?'selected':''].filter(Boolean).join(' ');
+    return `
+      <div class="${classes}" onclick="filtrarTimelineMes('${m}')" title="${isHoje?'Mês atual — ':''}${label}${anoLabel?'/'+ano:''}: ${count} evento(s)">
+        <div class="ev-tl-label">${label}${anoLabel}</div>
+        <div class="ev-tl-dot"></div>
+        ${hasEv ? `<div class="ev-tl-count">${count}</div>` : '<div style="height:18px"></div>'}
+      </div>`;
+  }).join('');
+
+  // Scroll para centralizar o mês atual
+  setTimeout(() => {
+    const sel = tl.querySelector('.is-hoje') || tl.querySelector('.selected');
+    if(sel) sel.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+  }, 50);
+}
+
+function filtrarTimelineMes(mes) {
+  const sel = document.getElementById('ev-filtro-mes');
+  if(sel.value === mes) {
+    sel.value = ''; // toggle: clicou no mesmo, limpa
+  } else {
+    sel.value = mes;
+  }
+  renderEventos();
 }
 
 </script>
