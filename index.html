@@ -454,6 +454,105 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 @media (max-width: 900px) { .pend-kpi-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 500px) { .pend-kpi-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ════ EVENTOS ════ */
+.ev-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(340px,1fr)); gap: 16px; margin-bottom: 1.5rem; }
+.ev-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.ev-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.ev-card-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+}
+.ev-nome { font-size: 15px; font-weight: 500; color: var(--text); }
+.ev-data { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.ev-status-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space:nowrap; flex-shrink:0;
+}
+.ev-confirmado  { background:rgba(42,143,163,0.15);  color:#4ab0c6; }
+.ev-andamento   { background:rgba(200,149,42,0.15);  color:#f0b84a; }
+.ev-concluido   { background:rgba(29,158,117,0.15);  color:#4ecba0; }
+.ev-cancelado   { background:rgba(216,90,48,0.15);   color:#f0895c; }
+.ev-card-body { padding: 14px 18px; }
+.ev-info-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--text2); }
+.ev-info-row strong { color: var(--text); }
+.ev-drinks { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+.ev-drink-tag {
+  background: rgba(42,143,163,0.1); border: 1px solid rgba(42,143,163,0.25);
+  color: var(--teal); padding: 2px 8px; border-radius: 20px; font-size: 11px;
+}
+.ev-card-footer {
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+}
+.ev-valor-total { font-family: 'Cormorant Garamond',serif; font-size: 20px; font-weight: 600; color: var(--text); }
+.ev-saldo-info { font-size: 12px; color: var(--text2); }
+.ev-saldo-pend { color: var(--gold); font-weight: 500; }
+.ev-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ev-btn {
+  background: transparent; border: 1px solid var(--border2); color: var(--text2);
+  padding: 5px 11px; border-radius: var(--radius-sm); font-size: 11px;
+  cursor: pointer; transition: all 0.15s; font-family: 'DM Sans',sans-serif; white-space:nowrap;
+}
+.ev-btn:hover { border-color: var(--teal); color: var(--teal); }
+.ev-btn-pag { border-color: var(--green); color: var(--green); }
+.ev-btn-pag:hover { background: rgba(29,158,117,0.1); }
+.ev-btn-danger { }
+.ev-btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+/* Pagamentos dentro do card */
+.ev-pagamentos { padding: 0 18px 14px; }
+.ev-pag-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 8px; }
+.ev-pag-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  background: var(--bg3); margin-bottom: 4px; gap: 8px; font-size: 12px;
+}
+.ev-pag-done { opacity: 0.5; text-decoration: line-through; }
+.ev-pag-badge {
+  padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 500; white-space:nowrap;
+}
+.ev-pag-badge-pend { background:rgba(200,149,42,0.15); color:#f0b84a; }
+.ev-pag-badge-pago { background:rgba(29,158,117,0.15); color:#4ecba0; }
+.ev-pag-baixa {
+  background: none; border: 1px solid var(--green); color: var(--green);
+  padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;
+  transition: all 0.15s; font-family: 'DM Sans',sans-serif; white-space:nowrap;
+}
+.ev-pag-baixa:hover { background: rgba(29,158,117,0.15); }
+.ev-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.5rem; }
+.ev-empty { text-align:center; padding:4rem; color:var(--text3); font-size:14px; }
+.ev-top-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:1.5rem; flex-wrap:wrap; gap:10px;
+}
+.ev-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.ev-filter-sel {
+  background:var(--bg2); border:1px solid var(--border); color:var(--text2);
+  padding:6px 10px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* Modal evento - parcelas */
+.parcelas-container { display:flex; flex-direction:column; gap:6px; margin-top:6px; }
+.parcela-row { display:flex; gap:8px; align-items:center; }
+.parcela-row input { flex:1; }
+.btn-add-parcela {
+  background:none; border:1px dashed var(--border2); color:var(--text2);
+  padding:7px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer;
+  width:100%; margin-top:4px; transition:all 0.15s; font-family:'DM Sans',sans-serif;
+}
+.btn-add-parcela:hover { border-color:var(--teal); color:var(--teal); }
+.btn-rm-parcela {
+  background:none; border:none; color:var(--text3); cursor:pointer; font-size:18px; padding:0 4px; line-height:1;
+}
+.btn-rm-parcela:hover { color:var(--red); }
+@media(max-width:900px){ .ev-kpi-grid{grid-template-columns:repeat(2,1fr);} }
 </style>
 </head>
 <body>
@@ -487,6 +586,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="page-nav">
     <button class="page-tab active" onclick="switchPage('dashboard',this)">Dashboard</button>
     <button class="page-tab" onclick="switchPage('pendencias',this)">Contas a Receber / Pagar</button>
+    <button class="page-tab" onclick="switchPage('eventos',this)">Eventos</button>
   </div>
 
   <!-- PAGE: DASHBOARD -->
@@ -524,7 +624,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
     <div class="filter-group">
       <label>Categoria</label>
-      <select id="f-cat" onchange="applyFilters()">
+      <select id="f-cat" onchange="updateSubcatFilter(); applyFilters()">
         <option value="">Todas</option>
         <option value="Insumos">Insumos</option>
         <option value="Manutenção">Manutenção</option>
@@ -533,6 +633,12 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
         <option value="Marketing">Marketing</option>
         <option value="Outras despesas">Outras despesas</option>
         <option value="Eventos Privados">Eventos Privados</option>
+      </select>
+    </div>
+    <div class="filter-group" id="f-subcat-group" style="display:none;">
+      <label>Subcategoria</label>
+      <select id="f-subcat" onchange="applyFilters()">
+        <option value="">Todas</option>
       </select>
     </div>
     <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
@@ -711,6 +817,34 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 </div><!-- /main inner -->
 
+
+  <!-- PAGE: EVENTOS -->
+  <div class="page" id="page-eventos">
+
+    <div class="ev-kpi-grid" id="ev-kpi-grid"></div>
+
+    <div class="ev-top-bar">
+      <div class="ev-filters">
+        <select class="ev-filter-sel" id="ev-filtro-status" onchange="renderEventos()">
+          <option value="">Todos os status</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="andamento">Em andamento</option>
+          <option value="concluido">Concluído</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <select class="ev-filter-sel" id="ev-filtro-mes" onchange="renderEventos()">
+          <option value="">Todos os meses</option>
+        </select>
+      </div>
+      <button class="btn-primary btn" onclick="openEvModal()">+ Novo Evento</button>
+    </div>
+
+    <div class="ev-grid" id="ev-grid">
+      <div class="loading"><div class="spinner"></div> Carregando eventos...</div>
+    </div>
+
+  </div><!-- /page-eventos -->
+
 <!-- MODAL PENDÊNCIA -->
 <div class="modal-overlay" id="modal-pend" onclick="closePendModalOutside(event)">
   <div class="modal">
@@ -778,6 +912,90 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="modal-actions">
       <button class="btn" onclick="closePendModal()">Cancelar</button>
       <button class="btn-primary btn" id="btn-pend-confirm" onclick="savePendencia()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL EVENTO -->
+<div class="modal-overlay" id="modal-evento" onclick="closeEvModalOutside(event)">
+  <div class="modal" style="width:min(620px,96vw);max-height:92vh;overflow-y:auto;">
+    <div class="modal-title" id="ev-modal-title">Novo Evento</div>
+    <input type="hidden" id="ev-editing-id" value="">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome do responsável</label>
+        <input type="text" id="ev-nome" placeholder="Ex: João e Maria">
+      </div>
+      <div class="form-group">
+        <label>Data do evento</label>
+        <input type="date" id="ev-data">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Horário</label>
+        <input type="time" id="ev-horario" placeholder="Ex: 19:00">
+      </div>
+      <div class="form-group">
+        <label>Quantidade de pessoas</label>
+        <input type="number" id="ev-pessoas" placeholder="Ex: 150" min="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Local</label>
+        <input type="text" id="ev-local" placeholder="Ex: Espaço Villa Jardins">
+      </div>
+      <div class="form-group">
+        <label>Cerimonialista <span style="color:var(--text3);font-weight:400;">(opcional)</span></label>
+        <input type="text" id="ev-cerimonialista" placeholder="Ex: Ana Paula Eventos">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Drinks escolhidos</label>
+        <input type="text" id="ev-drinks" placeholder="Ex: Gin Tônica, Negroni, Aperol Spritz (separados por vírgula)">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Valor total do evento (R$)</label>
+        <input type="number" id="ev-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="ev-status">
+          <option value="confirmado">Confirmado</option>
+          <option value="andamento">Em andamento</option>
+          <option value="concluido">Concluído</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>Observações extras</label>
+        <input type="text" id="ev-obs" placeholder="Ex: Cliente solicitou drinks sem álcool, quantidade extra de copo...">
+      </div>
+    </div>
+
+    <!-- PARCELAS -->
+    <div style="margin-top:4px;">
+      <div class="form-group">
+        <label style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Planejamento de pagamentos</span>
+          <span style="font-size:11px;color:var(--text3);" id="ev-total-parcelas-label"></span>
+        </label>
+        <div class="parcelas-container" id="parcelas-container"></div>
+        <button class="btn-add-parcela" onclick="addParcelaRow()">+ Adicionar parcela</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeEvModal()">Cancelar</button>
+      <button class="btn-primary btn" id="btn-ev-confirm" onclick="saveEvento()">Salvar evento</button>
     </div>
   </div>
 </div>
@@ -943,6 +1161,7 @@ window.addEventListener('firebaseReady', async () => {
   fbReady = true;
   document.getElementById('save-text').textContent = 'Firebase conectado';
   await loadPendencias();   // carrega pendências primeiro
+  await loadEventos();       // carrega eventos
   await loadFromFirebase(); // depois renderiza dashboard (já com pendências disponíveis)
 });
 setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
@@ -1162,22 +1381,39 @@ function renderAll(data) {
 }
 
 /* ── FILTERS ── */
+function updateSubcatFilter() {
+  const cat = document.getElementById('f-cat').value;
+  const group = document.getElementById('f-subcat-group');
+  const sel = document.getElementById('f-subcat');
+  if(!cat || !subcatsMap[cat]) {
+    group.style.display = 'none';
+    sel.value = '';
+    return;
+  }
+  const opts = subcatsMap[cat];
+  sel.innerHTML = '<option value="">Todas</option>' + opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  group.style.display = '';
+}
+
 function applyFilters() {
-  const from=document.getElementById('f-from').value;
-  const to=document.getElementById('f-to').value;
-  const tipo=document.getElementById('f-tipo').value;
-  const cat=document.getElementById('f-cat').value;
-  filteredData=allData.filter(d=>{
-    if(from&&d.data<from) return false;
-    if(to&&d.data>to) return false;
-    if(tipo&&d.tipo!==tipo) return false;
-    if(cat&&d.cat!==cat) return false;
+  const from   = document.getElementById('f-from').value;
+  const to     = document.getElementById('f-to').value;
+  const tipo   = document.getElementById('f-tipo').value;
+  const cat    = document.getElementById('f-cat').value;
+  const subcat = document.getElementById('f-subcat').value;
+  filteredData = allData.filter(d=>{
+    if(from   && d.data    < from)   return false;
+    if(to     && d.data    > to)     return false;
+    if(tipo   && d.tipo   !== tipo)  return false;
+    if(cat    && d.cat    !== cat)   return false;
+    if(subcat && d.sub    !== subcat) return false;
     return true;
   });
   renderAll(filteredData);
 }
 function clearFilters() {
-  ['f-from','f-to','f-tipo','f-cat'].forEach(id=>document.getElementById(id).value='');
+  ['f-from','f-to','f-tipo','f-cat','f-subcat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-subcat-group').style.display = 'none';
   filteredData=[...allData]; renderAll(filteredData);
 }
 function filterTab(tab,el) {
@@ -1306,12 +1542,9 @@ function switchPage(page, el) {
   el.classList.add('active');
   document.getElementById('page-'+page).classList.add('active');
   const btnNovo = document.getElementById('btn-novo');
-  if(page === 'pendencias') {
-    btnNovo.style.display = 'none';
-  } else {
-    btnNovo.style.display = '';
-  }
+  btnNovo.style.display = (page === 'pendencias' || page === 'eventos') ? 'none' : '';
   if(page === 'pendencias') renderPendencias();
+  if(page === 'eventos') renderEventos();
 }
 
 /* ════════════════════════════════
@@ -1614,6 +1847,310 @@ async function deletePend(id) {
   } catch(e) {
     showToast('Erro: '+e.message,'error');
   }
+}
+
+
+/* ════════════════════════════════
+   EVENTOS — DADOS & ESTADO
+════════════════════════════════ */
+let eventos = [];
+const colEventos = 'eventos';
+
+async function loadEventos() {
+  if(!fbReady) { eventos = []; return; }
+  try {
+    const snap = await window._getDocs(window._collection(window._db, colEventos));
+    eventos = snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e) { eventos = []; }
+}
+
+/* ── RENDER EVENTOS ── */
+function renderEventos() {
+  const statusFiltro = document.getElementById('ev-filtro-status').value;
+  const mesFiltro    = document.getElementById('ev-filtro-mes').value;
+
+  // Popular filtro de meses
+  const meses = [...new Set(eventos.map(e=>e.data?e.data.slice(0,7):null).filter(Boolean))].sort().reverse();
+  const mesAtual = document.getElementById('ev-filtro-mes').value;
+  document.getElementById('ev-filtro-mes').innerHTML =
+    '<option value="">Todos os meses</option>' +
+    meses.map(m=>`<option value="${m}" ${m===mesAtual?'selected':''}>${getMonthLabel(m)}</option>`).join('');
+
+  let lista = [...eventos].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  if(statusFiltro) lista = lista.filter(e=>e.status===statusFiltro);
+  if(mesFiltro)    lista = lista.filter(e=>(e.data||'').startsWith(mesFiltro));
+
+  // KPIs
+  const total = eventos.length;
+  const confirmados = eventos.filter(e=>e.status==='confirmado'||e.status==='andamento').length;
+  const receitaTotal = eventos.reduce((s,e)=>s+(e.valor||0),0);
+  const receitaRecebida = eventos.reduce((s,e)=>s+(e.parcelas||[]).filter(p=>p.pago).reduce((sp,p)=>sp+(p.valor||0),0),0);
+  const pendEv = receitaTotal - receitaRecebida;
+
+  document.getElementById('ev-kpi-grid').innerHTML = `
+    <div class="kpi-card" style="--accent:var(--teal)">
+      <div class="kpi-label">Total de eventos</div>
+      <div class="kpi-value teal">${total}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--gold)">
+      <div class="kpi-label">Confirmados / Em andamento</div>
+      <div class="kpi-value gold">${confirmados}</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--green)">
+      <div class="kpi-label">Receita total contratada</div>
+      <div class="kpi-value green">${fmt(receitaTotal)}</div>
+    </div>
+    <div class="kpi-card" style="--accent:${pendEv>0?'var(--red)':'var(--green)'}">
+      <div class="kpi-label">Saldo a receber (eventos)</div>
+      <div class="kpi-value ${pendEv>0?'red':'green'}">${fmt(pendEv)}</div>
+    </div>
+  `;
+
+  const grid = document.getElementById('ev-grid');
+  if(!lista.length) {
+    grid.innerHTML = '<div class="ev-empty">Nenhum evento cadastrado ainda.<br>Clique em <strong>+ Novo Evento</strong> para começar.</div>';
+    return;
+  }
+
+  const statusMap = {
+    confirmado: ['ev-confirmado','Confirmado'],
+    andamento:  ['ev-andamento', 'Em andamento'],
+    concluido:  ['ev-concluido', 'Concluído'],
+    cancelado:  ['ev-cancelado', 'Cancelado'],
+  };
+
+  grid.innerHTML = lista.map(ev=>{
+    const [stClass, stLabel] = statusMap[ev.status]||statusMap['confirmado'];
+    const drinks = (ev.drinks||'').split(',').map(d=>d.trim()).filter(Boolean);
+    const parcelas = ev.parcelas||[];
+    const totalPago = parcelas.filter(p=>p.pago).reduce((s,p)=>s+(p.valor||0),0);
+    const saldo = (ev.valor||0) - totalPago;
+    const pct = ev.valor>0 ? Math.min(100,Math.round((totalPago/ev.valor)*100)) : 0;
+
+    const parcItems = parcelas.map((p,i)=>`
+      <div class="ev-pag-item ${p.pago?'ev-pag-done':''}">
+        <div style="flex:1;">
+          <div style="font-weight:500;color:var(--text);">${p.descricao||'Parcela '+(i+1)}</div>
+          <div style="color:var(--text2);font-size:11px;">${p.vencimento?'Venc: '+fmtDate(p.vencimento):''}</div>
+        </div>
+        <div style="font-weight:500;color:${p.pago?'var(--green)':'var(--text)'};">${fmt(p.valor||0)}</div>
+        <span class="ev-pag-badge ${p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend'}">${p.pago?'✓ Pago':'Pendente'}</span>
+        ${!p.pago?`<button class="ev-pag-baixa" onclick="darBaixaParcela('${ev.id}',${i})">Dar baixa</button>`:''}
+      </div>
+    `).join('');
+
+    return `
+    <div class="ev-card">
+      <div class="ev-card-header">
+        <div>
+          <div class="ev-nome">🍹 ${ev.nome}</div>
+          <div class="ev-data">
+            ${ev.data?fmtDate(ev.data):'—'}
+            ${ev.horario?' às '+ev.horario:''}
+            ${ev.local?' · '+ev.local:''}
+          </div>
+          ${ev.cerimonialista?`<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: ${ev.cerimonialista}</div>`:''}
+        </div>
+        <span class="ev-status-pill ${stClass}">${stLabel}</span>
+      </div>
+      <div class="ev-card-body">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">
+          ${ev.horario?`<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>${ev.horario}</strong></div>`:''}
+          <div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>${ev.pessoas||'—'}</strong> pessoas</div>
+          ${ev.cerimonialista?`<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>${ev.cerimonialista}</strong></div>`:''}
+        </div>
+        ${drinks.length?`<div class="ev-drinks">${drinks.map(d=>`<span class="ev-drink-tag">${d}</span>`).join('')}</div>`:''}
+        ${ev.obs?`<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg3);border-radius:6px;">${ev.obs}</div>`:''}
+        <div style="margin-top:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span style="color:var(--text2)">Recebido</span>
+            <span style="color:var(--green)">${fmt(totalPago)} de ${fmt(ev.valor||0)}</span>
+          </div>
+          <div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:var(--green);border-radius:3px;transition:width 0.4s;"></div>
+          </div>
+        </div>
+      </div>
+      ${parcelas.length?`
+      <div class="ev-pagamentos">
+        <div class="ev-pag-title">Parcelas de pagamento</div>
+        ${parcItems}
+      </div>`:''}
+      <div class="ev-card-footer">
+        <div>
+          <div class="ev-valor-total">${fmt(ev.valor||0)}</div>
+          ${saldo>0?`<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">${fmt(saldo)}</span></div>`:'<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>'}
+        </div>
+        <div class="ev-actions">
+          <button class="ev-btn" onclick="editEvento('${ev.id}')">✎ Editar</button>
+          <button class="ev-btn ev-btn-danger" onclick="deleteEvento('${ev.id}')">× Excluir</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── MODAL EVENTO ── */
+let parcelasTemp = [];
+
+function openEvModal() {
+  document.getElementById('ev-editing-id').value = '';
+  document.getElementById('ev-modal-title').textContent = 'Novo Evento';
+  document.getElementById('btn-ev-confirm').textContent = 'Salvar evento';
+  document.getElementById('ev-nome').value = '';
+  document.getElementById('ev-data').value = '';
+  document.getElementById('ev-local').value = '';
+  document.getElementById('ev-pessoas').value = '';
+  document.getElementById('ev-drinks').value = '';
+  document.getElementById('ev-valor').value = '';
+  document.getElementById('ev-obs').value = '';
+  document.getElementById('ev-status').value = 'confirmado';
+  document.getElementById('ev-horario').value = '';
+  document.getElementById('ev-cerimonialista').value = '';
+  parcelasTemp = [];
+  renderParcelasForm();
+  document.getElementById('modal-evento').classList.add('open');
+}
+
+function editEvento(id) {
+  const ev = eventos.find(e=>e.id===id);
+  if(!ev) return;
+  document.getElementById('ev-editing-id').value = id;
+  document.getElementById('ev-modal-title').textContent = 'Editar Evento';
+  document.getElementById('btn-ev-confirm').textContent = 'Salvar alterações';
+  document.getElementById('ev-nome').value = ev.nome||'';
+  document.getElementById('ev-data').value = ev.data||'';
+  document.getElementById('ev-local').value = ev.local||'';
+  document.getElementById('ev-pessoas').value = ev.pessoas||'';
+  document.getElementById('ev-drinks').value = ev.drinks||'';
+  document.getElementById('ev-valor').value = ev.valor||'';
+  document.getElementById('ev-obs').value = ev.obs||'';
+  document.getElementById('ev-status').value = ev.status||'confirmado';
+  document.getElementById('ev-horario').value = ev.horario||'';
+  document.getElementById('ev-cerimonialista').value = ev.cerimonialista||'';
+  parcelasTemp = JSON.parse(JSON.stringify(ev.parcelas||[]));
+  renderParcelasForm();
+  document.getElementById('modal-evento').classList.add('open');
+}
+
+function closeEvModal() { document.getElementById('modal-evento').classList.remove('open'); }
+function closeEvModalOutside(e) { if(e.target.id==='modal-evento') closeEvModal(); }
+
+function addParcelaRow(p) {
+  parcelasTemp.push(p||{descricao:'',valor:'',vencimento:'',pago:false});
+  renderParcelasForm();
+}
+
+function renderParcelasForm() {
+  const c = document.getElementById('parcelas-container');
+  const totalEv = parseFloat(document.getElementById('ev-valor').value)||0;
+  const totalParcelas = parcelasTemp.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);
+  document.getElementById('ev-total-parcelas-label').textContent =
+    parcelasTemp.length ? `Total: ${fmt(totalParcelas)} de ${fmt(totalEv)}` : '';
+  c.innerHTML = parcelasTemp.map((p,i)=>`
+    <div class="parcela-row">
+      <input type="text" placeholder="Descrição (ex: Entrada)" value="${p.descricao||''}"
+        oninput="parcelasTemp[${i}].descricao=this.value" style="flex:2;">
+      <input type="number" placeholder="R$" value="${p.valor||''}" step="0.01" min="0"
+        oninput="parcelasTemp[${i}].valor=parseFloat(this.value)||0; renderParcelasForm();" style="flex:1;">
+      <input type="date" value="${p.vencimento||''}"
+        onchange="parcelasTemp[${i}].vencimento=this.value" style="flex:1.2;">
+      <button class="btn-rm-parcela" onclick="removeParcelaRow(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function removeParcelaRow(i) {
+  parcelasTemp.splice(i,1);
+  renderParcelasForm();
+}
+
+async function saveEvento() {
+  const editingId = document.getElementById('ev-editing-id').value;
+  const nome           = document.getElementById('ev-nome').value.trim();
+  const data           = document.getElementById('ev-data').value;
+  const horario        = document.getElementById('ev-horario').value;
+  const local          = document.getElementById('ev-local').value.trim();
+  const cerimonialista = document.getElementById('ev-cerimonialista').value.trim();
+  const pessoas        = parseInt(document.getElementById('ev-pessoas').value)||0;
+  const drinks         = document.getElementById('ev-drinks').value.trim();
+  const valor          = parseFloat(document.getElementById('ev-valor').value)||0;
+  const obs            = document.getElementById('ev-obs').value.trim();
+  const status         = document.getElementById('ev-status').value;
+
+  if(!nome||!data||valor<=0) { showToast('Preencha nome, data e valor.','error'); return; }
+
+  const item = { nome, data, horario, local, cerimonialista, pessoas, drinks, valor, obs, status, parcelas: parcelasTemp };
+  const btn = document.getElementById('btn-ev-confirm');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+
+  try {
+    if(editingId) {
+      if(fbReady) await window._setDoc(window._doc(window._db, colEventos, editingId), item);
+      item.id = editingId;
+      const idx = eventos.findIndex(e=>e.id===editingId);
+      if(idx>-1) eventos[idx] = item;
+      showToast('Evento atualizado!','success');
+    } else {
+      if(fbReady) {
+        const ref = await window._addDoc(window._collection(window._db, colEventos), item);
+        item.id = ref.id;
+      } else { item.id = 'local-'+Date.now(); }
+      eventos.push(item);
+      showToast('Evento salvo!','success');
+    }
+    renderEventos();
+    closeEvModal();
+  } catch(e) { showToast('Erro: '+e.message,'error'); }
+  btn.textContent = 'Salvar evento'; btn.disabled = false;
+}
+
+async function darBaixaParcela(evId, parcelaIdx) {
+  const ev = eventos.find(e=>e.id===evId);
+  if(!ev) return;
+  const parcela = ev.parcelas[parcelaIdx];
+  if(!confirm(`Confirmar recebimento de ${fmt(parcela.valor||0)}\n"${parcela.descricao||'Parcela '+(parcelaIdx+1)}"?`)) return;
+
+  // Marcar como pago
+  ev.parcelas[parcelaIdx].pago = true;
+
+  // Lançar no financeiro automaticamente
+  const lancamento = {
+    data: new Date().toISOString().slice(0,10),
+    tipo: 'Receita',
+    cat: 'Eventos Privados',
+    sub: 'Acerto',
+    desc: `${parcela.descricao||'Parcela'} — ${ev.nome}`,
+    valor: parseFloat(parcela.valor)||0,
+    pag: 'PIX',
+    obs: `Baixa automática — Evento ${ev.nome}`
+  };
+
+  try {
+    if(fbReady) {
+      // Salvar evento atualizado
+      await window._setDoc(window._doc(window._db, colEventos, evId), ev);
+      // Lançar no financeiro
+      const ref = await window._addDoc(window._colRef, lancamento);
+      lancamento.id = ref.id;
+    } else { lancamento.id = 'local-'+Date.now(); }
+
+    allData.unshift(lancamento);
+    filteredData = [...allData];
+    renderAll(filteredData);
+    renderEventos();
+    showToast('✓ Baixa dada! Lançado automaticamente no financeiro.','success');
+  } catch(e) { showToast('Erro: '+e.message,'error'); }
+}
+
+async function deleteEvento(id) {
+  if(!confirm('Excluir este evento? Esta ação não pode ser desfeita.')) return;
+  try {
+    if(fbReady && !id.startsWith('local-')) await window._deleteDoc(window._doc(window._db, colEventos, id));
+    eventos = eventos.filter(e=>e.id!==id);
+    renderEventos();
+    showToast('Evento excluído.','success');
+  } catch(e) { showToast('Erro: '+e.message,'error'); }
 }
 
 </script>
