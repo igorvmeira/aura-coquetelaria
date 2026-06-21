@@ -941,6 +941,29 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   transition: background 0.15s;
 }
 .btn-copy-compras:hover { background: var(--teal-dark); }
+
+/* ════ GRUPO CONCLUÍDOS RECOLHÍVEL ════ */
+.ev-concluidos-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 18px; cursor: pointer;
+  margin: 1.5rem 0 0; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.ev-concluidos-toggle:hover { border-color: var(--border2); }
+.ev-concluidos-toggle .toggle-left { display: flex; align-items: center; gap: 10px; }
+.ev-concluidos-toggle .toggle-icon {
+  font-size: 13px; color: var(--text2); transition: transform 0.2s;
+}
+.ev-concluidos-toggle.open .toggle-icon { transform: rotate(90deg); }
+.ev-concluidos-toggle .toggle-label { font-size: 13px; color: var(--text); font-weight: 500; }
+.ev-concluidos-toggle .toggle-count {
+  background: var(--bg4); color: var(--text2); font-size: 11px;
+  padding: 2px 9px; border-radius: 20px;
+}
+.ev-concluidos-content { display: none; margin-top: 12px; }
+.ev-concluidos-content.open { display: block; }
+.ev-card.ev-card-passado { opacity: 0.7; }
+.ev-card.ev-card-passado:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -2370,92 +2393,152 @@ function renderEventos() {
     cancelado:  ['ev-cancelado', 'Cancelado'],
   };
 
-  // Agrupar por mês
-  const porMes = {};
-  lista.forEach(function(ev) {
-    const k = ev.data ? ev.data.slice(0,7) : 'sem-data';
-    if(!porMes[k]) porMes[k] = [];
-    porMes[k].push(ev);
-  });
-  const mesesOrdenados = Object.keys(porMes).sort();
   const hoje = new Date();
+  hoje.setHours(0,0,0,0);
   const mesHoje = hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
 
-  let html = '';
-  mesesOrdenados.forEach(function(mes) {
-    const isHoje = mes === mesHoje;
-    const label = mes === 'sem-data' ? 'Sem data' : getMonthLabel(mes) + (mes.slice(0,4) !== String(new Date().getFullYear()) ? ' '+mes.slice(0,4) : '');
-    const headerStyle = isHoje ? 'background:var(--teal);box-shadow:0 0 0 3px rgba(42,143,163,0.25);font-size:13px;padding:5px 18px;' : 'background:var(--bg3);color:var(--text2);';
-    html += '<div class="ev-section-header"><span style="'+headerStyle+'">'+(isHoje?'📅 Este mês — ':'')+label+'</span></div>';
-    html += '<div class="ev-grid" style="margin-bottom:0">';
-
-    porMes[mes].forEach(function(ev) {
-      const stArr = statusMap[ev.status]||statusMap['confirmado'];
-      const stClass = stArr[0]; const stLabel = stArr[1];
-      const drinks = (ev.drinks||'').split(',').map(function(d){ return d.trim(); }).filter(Boolean);
-      const parcelas = ev.parcelas||[];
-      const totalPago = parcelas.filter(function(p){ return p.pago; }).reduce(function(s,p){ return s+(p.valor||0); },0);
-      const saldo = (ev.valor||0) - totalPago;
-      const pct = ev.valor>0 ? Math.min(100,Math.round((totalPago/ev.valor)*100)) : 0;
-
-      let parcItems = '';
-      parcelas.forEach(function(p,i) {
-        parcItems += '<div class="ev-pag-item'+(p.pago?' ev-pag-done':'')+'">';
-        parcItems += '<div style="flex:1;"><div style="font-weight:500;color:var(--text);">'+(p.descricao||'Parcela '+(i+1))+'</div>';
-        parcItems += '<div style="color:var(--text2);font-size:11px;">'+(p.vencimento?'Venc: '+fmtDate(p.vencimento):'')+'</div></div>';
-        parcItems += '<div style="font-weight:500;color:'+(p.pago?'var(--green)':'var(--text)')+';">'+fmt(p.valor||0)+'</div>';
-        parcItems += '<span class="ev-pag-badge '+(p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend')+'">'+(p.pago?'✓ Pago':'Pendente')+'</span>';
-        if(!p.pago) parcItems += '<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela(\'' + ev.id + '\',' + i + ')">Dar baixa</button>';
-        parcItems += '</div>';
-      });
-
-      let drinksHtml = '';
-      if(drinks.length) {
-        drinksHtml = '<div class="ev-drinks">';
-        drinks.forEach(function(d){ drinksHtml += '<span class="ev-drink-tag">'+d+'</span>'; });
-        drinksHtml += '</div>';
-      }
-
-      const cardClass = 'ev-card'+(isHoje?' ev-card-hoje':'');
-      let card = '<div class="'+cardClass+'" onclick="openDrawer(\'' + ev.id + '\')" style="cursor:pointer;">';
-      card += '<div class="ev-card-header">';
-      card += '<div>';
-      card += '<div class="ev-nome" style="display:flex;align-items:center;gap:8px;">🍹 '+ev.nome+(isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':'')+'</div>';
-      card += '<div class="ev-data">'+(ev.data?fmtDate(ev.data):'—')+(ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):'')+(ev.local?' · '+ev.local:'')+'</div>';
-      if(ev.cerimonialista) card += '<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: '+ev.cerimonialista+'</div>';
-      card += '</div>';
-      card += '<span class="ev-status-pill '+stClass+'">'+stLabel+'</span>';
-      card += '</div>';
-      card += '<div class="ev-card-body">';
-      card += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">';
-      if(ev.horario) card += '<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>'+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:'')+'</strong></div>';
-      card += '<div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>'+(ev.pessoas||'—')+'</strong> pessoas</div>';
-      if(ev.cerimonialista) card += '<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>'+ev.cerimonialista+'</strong></div>';
-      card += '</div>';
-      card += drinksHtml;
-      if(ev.obs) card += '<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg3);border-radius:6px;">'+ev.obs+'</div>';
-      card += '<div style="margin-top:10px;">';
-      card += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text2)">Recebido</span><span style="color:var(--green)">'+fmt(totalPago)+' de '+fmt(ev.valor||0)+'</span></div>';
-      card += '<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--green);border-radius:3px;transition:width 0.4s;"></div></div>';
-      card += '</div></div>';
-      if(parcelas.length) {
-        card += '<div class="ev-pagamentos"><div class="ev-pag-title">Parcelas de pagamento</div>'+parcItems+'</div>';
-      }
-      card += '<div class="ev-card-footer">';
-      card += '<div><div class="ev-valor-total">'+fmt(ev.valor||0)+'</div>';
-      card += saldo>0 ? '<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">'+fmt(saldo)+'</span></div>' : '<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>';
-      card += '</div>';
-      card += '<div class="ev-actions" onclick="event.stopPropagation()">';
-      card += '<button class="ev-btn" onclick="event.stopPropagation();editEvento(\'' + ev.id + '\')">✎ Editar</button>';
-      card += '<button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento(\'' + ev.id + '\')">× Excluir</button>';
-      card += '</div></div></div>';
-
-      html += card;
-    });
-    html += '</div>';
+  // Separar eventos ATIVOS (futuros/atuais e não concluídos) dos CONCLUÍDOS/PASSADOS
+  const ativos = [];
+  const concluidos = [];
+  lista.forEach(function(ev) {
+    const dataEv = ev.data ? new Date(ev.data+'T00:00:00') : null;
+    const jaPassou = dataEv && dataEv < hoje;
+    const ehConcluido = ev.status === 'concluido' || ev.status === 'cancelado';
+    if(jaPassou || ehConcluido) {
+      concluidos.push(ev);
+    } else {
+      ativos.push(ev);
+    }
   });
 
+  // Função que monta o card de um evento
+  function montarCard(ev, isHoje, isPassado) {
+    const stArr = statusMap[ev.status]||statusMap['confirmado'];
+    const stClass = stArr[0]; const stLabel = stArr[1];
+    const drinks = (ev.drinks||'').split(',').map(function(d){ return d.trim(); }).filter(Boolean);
+    const parcelas = ev.parcelas||[];
+    const totalPago = parcelas.filter(function(p){ return p.pago; }).reduce(function(s,p){ return s+(p.valor||0); },0);
+    const saldo = (ev.valor||0) - totalPago;
+    const pct = ev.valor>0 ? Math.min(100,Math.round((totalPago/ev.valor)*100)) : 0;
+
+    let parcItems = '';
+    parcelas.forEach(function(p,i) {
+      parcItems += '<div class="ev-pag-item'+(p.pago?' ev-pag-done':'')+'">';
+      parcItems += '<div style="flex:1;"><div style="font-weight:500;color:var(--text);">'+(p.descricao||'Parcela '+(i+1))+'</div>';
+      parcItems += '<div style="color:var(--text2);font-size:11px;">'+(p.vencimento?'Venc: '+fmtDate(p.vencimento):'')+'</div></div>';
+      parcItems += '<div style="font-weight:500;color:'+(p.pago?'var(--green)':'var(--text)')+';">'+fmt(p.valor||0)+'</div>';
+      parcItems += '<span class="ev-pag-badge '+(p.pago?'ev-pag-badge-pago':'ev-pag-badge-pend')+'">'+(p.pago?'✓ Pago':'Pendente')+'</span>';
+      if(!p.pago) parcItems += '<button class="ev-pag-baixa" onclick="event.stopPropagation();darBaixaParcela(\'' + ev.id + '\',' + i + ')">Dar baixa</button>';
+      parcItems += '</div>';
+    });
+
+    let drinksHtml = '';
+    if(drinks.length) {
+      drinksHtml = '<div class="ev-drinks">';
+      drinks.forEach(function(d){ drinksHtml += '<span class="ev-drink-tag">'+d+'</span>'; });
+      drinksHtml += '</div>';
+    }
+
+    let cardClass = 'ev-card';
+    if(isHoje) cardClass += ' ev-card-hoje';
+    if(isPassado) cardClass += ' ev-card-passado';
+    let card = '<div class="'+cardClass+'" onclick="openDrawer(\'' + ev.id + '\')" style="cursor:pointer;">';
+    card += '<div class="ev-card-header">';
+    card += '<div>';
+    card += '<div class="ev-nome" style="display:flex;align-items:center;gap:8px;">🍹 '+ev.nome+(isHoje?'<span class="ev-badge-mes-atual">● Este mês</span>':'')+'</div>';
+    card += '<div class="ev-data">'+(ev.data?fmtDate(ev.data):'—')+(ev.horario?' às '+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:''):'')+(ev.local?' · '+ev.local:'')+'</div>';
+    if(ev.cerimonialista) card += '<div style="font-size:11px;color:var(--teal);margin-top:3px;">👰 Cerimonialista: '+ev.cerimonialista+'</div>';
+    card += '</div>';
+    card += '<span class="ev-status-pill '+stClass+'">'+stLabel+'</span>';
+    card += '</div>';
+    card += '<div class="ev-card-body">';
+    card += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;">';
+    if(ev.horario) card += '<div class="ev-info-row" style="margin:0;"><span>🕐</span> <strong>'+ev.horario+(ev.horarioFim?' – '+ev.horarioFim:'')+'</strong></div>';
+    card += '<div class="ev-info-row" style="margin:0;"><span>👥</span> <strong>'+(ev.pessoas||'—')+'</strong> pessoas</div>';
+    if(ev.cerimonialista) card += '<div class="ev-info-row" style="margin:0;"><span>👰</span> <strong>'+ev.cerimonialista+'</strong></div>';
+    card += '</div>';
+    card += drinksHtml;
+    if(ev.obs) card += '<div style="font-size:12px;color:var(--text2);margin-top:6px;padding:8px;background:var(--bg3);border-radius:6px;">'+ev.obs+'</div>';
+    card += '<div style="margin-top:10px;">';
+    card += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text2)">Recebido</span><span style="color:var(--green)">'+fmt(totalPago)+' de '+fmt(ev.valor||0)+'</span></div>';
+    card += '<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--green);border-radius:3px;transition:width 0.4s;"></div></div>';
+    card += '</div></div>';
+    if(parcelas.length) {
+      card += '<div class="ev-pagamentos"><div class="ev-pag-title">Parcelas de pagamento</div>'+parcItems+'</div>';
+    }
+    card += '<div class="ev-card-footer">';
+    card += '<div><div class="ev-valor-total">'+fmt(ev.valor||0)+'</div>';
+    card += saldo>0 ? '<div class="ev-saldo-info">Saldo pendente: <span class="ev-saldo-pend">'+fmt(saldo)+'</span></div>' : '<div class="ev-saldo-info" style="color:var(--green)">✓ Quitado</div>';
+    card += '</div>';
+    card += '<div class="ev-actions" onclick="event.stopPropagation()">';
+    card += '<button class="ev-btn" onclick="event.stopPropagation();editEvento(\'' + ev.id + '\')">✎ Editar</button>';
+    card += '<button class="ev-btn ev-btn-danger" onclick="event.stopPropagation();deleteEvento(\'' + ev.id + '\')">× Excluir</button>';
+    card += '</div></div></div>';
+    return card;
+  }
+
+  // Função que agrupa lista por mês e gera HTML
+  function montarPorMes(eventosLista, isPassadoGroup) {
+    const porMes = {};
+    eventosLista.forEach(function(ev) {
+      const k = ev.data ? ev.data.slice(0,7) : 'sem-data';
+      if(!porMes[k]) porMes[k] = [];
+      porMes[k].push(ev);
+    });
+    const meses = Object.keys(porMes).sort();
+    if(isPassadoGroup) meses.reverse(); // concluídos: mais recentes primeiro
+    let h = '';
+    meses.forEach(function(mes) {
+      const isHoje = mes === mesHoje && !isPassadoGroup;
+      const label = mes === 'sem-data' ? 'Sem data' : getMonthLabel(mes) + (mes.slice(0,4) !== String(new Date().getFullYear()) ? ' '+mes.slice(0,4) : '');
+      const headerStyle = isHoje ? 'background:var(--teal);box-shadow:0 0 0 3px rgba(42,143,163,0.25);font-size:13px;padding:5px 18px;' : 'background:var(--bg3);color:var(--text2);';
+      h += '<div class="ev-section-header"><span style="'+headerStyle+'">'+(isHoje?'📅 Este mês — ':'')+label+'</span></div>';
+      h += '<div class="ev-grid" style="margin-bottom:0">';
+      porMes[mes].forEach(function(ev) {
+        h += montarCard(ev, isHoje, isPassadoGroup);
+      });
+      h += '</div>';
+    });
+    return h;
+  }
+
+  let html = '';
+
+  // Eventos ativos (sempre visíveis)
+  if(ativos.length) {
+    html += montarPorMes(ativos, false);
+  } else {
+    html += '<div class="ev-empty">Nenhum evento ativo no momento.<br>Clique em <strong>+ Novo Evento</strong> para adicionar.</div>';
+  }
+
+  // Eventos concluídos/passados (recolhível)
+  if(concluidos.length) {
+    html += '<div class="ev-concluidos-toggle" id="ev-concluidos-toggle" onclick="toggleConcluidos()">';
+    html += '<div class="toggle-left"><span class="toggle-icon">▶</span><span class="toggle-label">✓ Eventos concluídos / passados</span></div>';
+    html += '<span class="toggle-count">'+concluidos.length+'</span>';
+    html += '</div>';
+    html += '<div class="ev-concluidos-content" id="ev-concluidos-content">';
+    html += montarPorMes(concluidos, true);
+    html += '</div>';
+  }
+
   grid.innerHTML = html;
+
+  // Restaurar estado de expansão se estava aberto
+  if(window._concluidosAbertos) {
+    var tg = document.getElementById('ev-concluidos-toggle');
+    var ct = document.getElementById('ev-concluidos-content');
+    if(tg && ct) { tg.classList.add('open'); ct.classList.add('open'); }
+  }
+}
+
+function toggleConcluidos() {
+  var tg = document.getElementById('ev-concluidos-toggle');
+  var ct = document.getElementById('ev-concluidos-content');
+  if(!tg || !ct) return;
+  const isOpen = ct.classList.toggle('open');
+  tg.classList.toggle('open', isOpen);
+  window._concluidosAbertos = isOpen;
 }
 /* ── MODAL EVENTO ── */
 let parcelasTemp = [];
