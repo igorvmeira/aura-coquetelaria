@@ -964,6 +964,78 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .ev-concluidos-content.open { display: block; }
 .ev-card.ev-card-passado { opacity: 0.7; }
 .ev-card.ev-card-passado:hover { opacity: 1; }
+
+.rtd-drinks-info {
+  display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+}
+.rtd-metric {
+  flex: 1; min-width: 100px;
+  background: rgba(29,158,117,0.08); border: 1px solid rgba(29,158,117,0.2);
+  border-radius: var(--radius-sm); padding: 8px 10px; text-align: center;
+}
+.rtd-metric.teal { background: rgba(42,143,163,0.08); border-color: rgba(42,143,163,0.2); }
+.rtd-metric-val { font-size: 16px; font-weight: 600; color: var(--green); }
+.rtd-metric.teal .rtd-metric-val { color: var(--teal); }
+.rtd-metric-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.rtd-resumo-box {
+  background: linear-gradient(135deg, rgba(29,158,117,0.1), var(--bg2));
+  border: 1px solid rgba(29,158,117,0.25); border-radius: var(--radius);
+  padding: 16px 18px; margin-top: 14px;
+}
+.rtd-resumo-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.rtd-resumo-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.rtd-resumo-row:last-child { border-bottom: none; }
+.rtd-resumo-label { color: var(--text2); }
+.rtd-resumo-val { color: var(--text); font-weight: 500; }
+.rtd-resumo-destaque {
+  background: rgba(200,149,42,0.1); border: 1px solid rgba(200,149,42,0.25);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 10px;
+  font-size: 12px; color: var(--text);
+}
+.rtd-resumo-destaque strong { color: var(--gold); }
+
+/* ════ PAINEL LISTA DE COMPRAS DEDICADO ════ */
+.lc-header-actions { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.lc-section { margin-bottom: 18px; }
+.lc-section-title {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--teal); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.lc-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border); margin-bottom: 5px;
+  transition: all 0.15s;
+}
+.lc-item.comprado { opacity: 0.5; }
+.lc-item.comprado .lc-nome { text-decoration: line-through; }
+.lc-check {
+  width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border2);
+  cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;
+}
+.lc-item.comprado .lc-check { background: var(--green); border-color: var(--green); }
+.lc-nome { flex: 1; font-size: 14px; color: var(--text); }
+.lc-qtd { font-size: 14px; color: var(--gold); font-weight: 600; white-space: nowrap; }
+.lc-progress {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  padding: 12px 14px; background: var(--bg3); border-radius: var(--radius-sm);
+}
+.lc-progress-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.lc-progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+.lc-progress-txt { font-size: 12px; color: var(--text2); white-space: nowrap; }
+.lc-empty { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 13px; }
+.lc-empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+.btn-lc-action {
+  background: var(--teal); border: none; color: #fff;
+  padding: 8px 14px; border-radius: var(--radius-sm); font-size: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-lc-action:hover { background: var(--teal-dark); }
+.btn-lc-action.ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.btn-lc-action.ghost:hover { border-color: var(--teal); color: var(--teal); }
 </style>
 </head>
 <body>
@@ -1443,6 +1515,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <button class="drawer-tab" onclick="switchDrawerTab('mdo',this)">👷 Mão de obra <span class="tab-badge warn" id="badge-mdo">0</span></button>
     <button class="drawer-tab" onclick="switchDrawerTab('passos',this)">✅ Passo a passo <span class="tab-badge" id="badge-passos">0</span></button>
     <button class="drawer-tab" onclick="switchDrawerTab('rtd',this)">🍹 Drinks RTD</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('compras',this)">🛒 Lista de Compras</button>
   </div>
   <div class="drawer-body">
 
@@ -1505,7 +1578,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <!-- PAINEL DRINKS RTD -->
     <div class="drawer-panel" id="panel-rtd">
       <div style="font-size:12px;color:var(--text2);margin-bottom:16px;padding:10px 14px;background:rgba(42,143,163,0.07);border-radius:var(--radius-sm);border:1px solid rgba(42,143,163,0.15);">
-        💡 Configure quantos mL por litro cada drink usa e o consumo por pessoa (em mL) para calcular automaticamente quantos litros produzir.
+        💡 Defina quantos drinks por pessoa de cada item. O cálculo usa o volume real do copo de cada drink (da ficha técnica) para chegar aos litros exatos a produzir.
       </div>
       <div id="rtd-drinks-list"></div>
       <div class="rtd-total-box" id="rtd-total-box" style="display:none;">
@@ -1513,6 +1586,14 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="rtd-total-val" id="rtd-total-val">0</div>
         <div class="rtd-safety">Incluindo margem de segurança</div>
       </div>
+    </div>
+
+    <!-- PAINEL LISTA DE COMPRAS -->
+    <div class="drawer-panel" id="panel-compras">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;padding:10px 14px;background:rgba(42,143,163,0.07);border-radius:var(--radius-sm);border:1px solid rgba(42,143,163,0.15);">
+        💡 Lista gerada automaticamente a partir das fichas técnicas dos drinks escolhidos e da quantidade de pessoas. Marque os itens conforme for comprando.
+      </div>
+      <div id="compras-list-panel"></div>
     </div>
 
   </div><!-- /drawer-body -->
@@ -2816,7 +2897,7 @@ function openDrawer(evId) {
   Object.keys(ev.rtdConfig).forEach(drink => {
     const cfg = ev.rtdConfig[drink];
     if(cfg.dosesGarrafa !== undefined || cfg.dosesPessoa !== undefined) {
-      ev.rtdConfig[drink] = { mlPorPessoa: 200, seguranca: cfg.seguranca||15 };
+      ev.rtdConfig[drink] = { drinksPorPessoa: 1.5, seguranca: cfg.seguranca||15 };
     }
   });
 
@@ -2824,6 +2905,7 @@ function openDrawer(evId) {
   renderMdo(ev);
   renderPassos(ev);
   renderRtd(ev);
+  renderListaCompras(ev);
   updateDrawerBadges(ev);
 
   // Abrir
@@ -3014,7 +3096,7 @@ function toggleStep(idx) {
 ════════════════════════════════════════ */
 const RECIPES_DB = {
   "bahama mama": {
-    nome: "Bahama Mama", rendimentoMl: 5000,
+    nome: "Bahama Mama", rendimentoMl: 5000, mlPorDrink: 250,
     ingredientes: [
       {nome:"Rum Bacardi Prata", qtd:750, un:"g"},
       {nome:"Malibu", qtd:750, un:"g"},
@@ -3035,7 +3117,7 @@ const RECIPES_DB = {
     ]
   },
   "orange aperol": {
-    nome: "Orange Aperol", rendimentoMl: 1315,
+    nome: "Orange Aperol", rendimentoMl: 1315, mlPorDrink: 220,
     ingredientes: [
       {nome:"Água", qtd:700, un:"ml"},
       {nome:"Aperol", qtd:360, un:"ml"},
@@ -3051,7 +3133,7 @@ const RECIPES_DB = {
     ]
   },
   "gin aura": {
-    nome: "Gin Aura", rendimentoMl: 1290,
+    nome: "Gin Aura", rendimentoMl: 1290, mlPorDrink: 350,
     ingredientes: [
       {nome:"Sprite", qtd:850, un:"ml"},
       {nome:"Gin", qtd:220, un:"ml"},
@@ -3067,7 +3149,7 @@ const RECIPES_DB = {
     ]
   },
   "pina descolada": {
-    nome: "Piña Descolada", rendimentoMl: 1500,
+    nome: "Piña Descolada", rendimentoMl: 1500, mlPorDrink: 200,
     ingredientes: [
       {nome:"Suco Concentrado de Abacaxi", qtd:500, un:"ml"},
       {nome:"Malibu", qtd:250, un:"ml"},
@@ -3086,7 +3168,7 @@ const RECIPES_DB = {
     ]
   },
   "tropical gin": {
-    nome: "Tropical Gin", rendimentoMl: 1318,
+    nome: "Tropical Gin", rendimentoMl: 1318, mlPorDrink: 275,
     ingredientes: [
       {nome:"Gin", qtd:268, un:"ml"},
       {nome:"Energético", qtd:975, un:"ml"},
@@ -3094,7 +3176,7 @@ const RECIPES_DB = {
     ]
   },
   "garibaldi": {
-    nome: "Garibaldi", rendimentoMl: 200,
+    nome: "Garibaldi", rendimentoMl: 200, mlPorDrink: 200,
     ingredientes: [
       {nome:"Campari", qtd:60, un:"ml"},
       {nome:"Suco de Laranja 2.0", qtd:140, un:"ml", prep:{
@@ -3108,7 +3190,7 @@ const RECIPES_DB = {
     ]
   },
   "maramule": {
-    nome: "Maramule", rendimentoMl: 1500,
+    nome: "Maramule", rendimentoMl: 1500, mlPorDrink: 150,
     ingredientes: [
       {nome:"Cordial de Maracujá", qtd:500, un:"ml", prep:{
         rendimentoMl: 1600,
@@ -3124,7 +3206,7 @@ const RECIPES_DB = {
     ]
   },
   "fitzgerald": {
-    nome: "Fitzgerald", rendimentoMl: 745,
+    nome: "Fitzgerald", rendimentoMl: 745, mlPorDrink: 75,
     ingredientes: [
       {nome:"Gin Spiral", qtd:500, un:"ml"},
       {nome:"Xarope Simples", qtd:230, un:"ml"},
@@ -3132,7 +3214,7 @@ const RECIPES_DB = {
     ]
   },
   "pedaco de mal caminho": {
-    nome: "Pedaço de Mal Caminho", rendimentoMl: 1500,
+    nome: "Pedaço de Mal Caminho", rendimentoMl: 1500, mlPorDrink: 220,
     ingredientes: [
       {nome:"Cordial de Frutas Vermelhas", qtd:750, un:"ml", prep:{
         rendimentoMl: 1246,
@@ -3151,7 +3233,7 @@ const RECIPES_DB = {
     ]
   },
   "caipirinha de coco queimado": {
-    nome: "Caipirinha de Coco Queimado", rendimentoMl: 200,
+    nome: "Caipirinha de Coco Queimado", rendimentoMl: 200, mlPorDrink: 200,
     ingredientes: [
       {nome:"Cachaça coco queimado", qtd:60, un:"ml"},
       {nome:"Limão Taiti (fatias)", qtd:6, un:"un"},
@@ -3159,7 +3241,7 @@ const RECIPES_DB = {
     ]
   },
   "negroni": {
-    nome: "Negroni", rendimentoMl: 700,
+    nome: "Negroni", rendimentoMl: 700, mlPorDrink: 100,
     ingredientes: [
       {nome:"Campari", qtd:200, un:"ml"},
       {nome:"Gin", qtd:200, un:"ml"},
@@ -3169,7 +3251,7 @@ const RECIPES_DB = {
     ]
   },
   "cosmopolitan fizz": {
-    nome: "Cosmopolitan Fizz", rendimentoMl: 1260,
+    nome: "Cosmopolitan Fizz", rendimentoMl: 1260, mlPorDrink: 171,
     ingredientes: [
       {nome:"Água", qtd:510, un:"ml"},
       {nome:"Vodka Spiral", qtd:360, un:"ml"},
@@ -3189,7 +3271,7 @@ const RECIPES_DB = {
     ]
   },
   "soda italiana": {
-    nome: "Soda Italiana", rendimentoMl: 1220,
+    nome: "Soda Italiana", rendimentoMl: 1220, mlPorDrink: 210,
     ingredientes: [
       {nome:"Água Gelada", qtd:1000, un:"ml"},
       {nome:"Xarope Monin", qtd:187, un:"ml"},
@@ -3204,7 +3286,7 @@ const RECIPES_DB = {
     ]
   },
   "aperol spritz": {
-    nome: "Aperol Spritz", rendimentoMl: 1250,
+    nome: "Aperol Spritz", rendimentoMl: 1250, mlPorDrink: 200,
     ingredientes: [
       {nome:"Vinho branco", qtd:550, un:"ml"},
       {nome:"Aperol", qtd:400, un:"ml"},
@@ -3213,7 +3295,7 @@ const RECIPES_DB = {
     ]
   },
   "bourbon peach": {
-    nome: "Bourbon Peach", rendimentoMl: 1000,
+    nome: "Bourbon Peach", rendimentoMl: 1000, mlPorDrink: 160,
     ingredientes: [
       {nome:"Bourbon Jim Beam", qtd:300, un:"ml"},
       {nome:"Água", qtd:400, un:"ml"},
@@ -3231,7 +3313,7 @@ const RECIPES_DB = {
     ]
   },
   "moscow mule": {
-    nome: "Moscow Mule", rendimentoMl: 1200,
+    nome: "Moscow Mule", rendimentoMl: 1200, mlPorDrink: 150,
     ingredientes: [
       {nome:"Cordial de Gengibre", qtd:400, un:"ml", prep:{
         rendimentoMl: 1660,
@@ -3308,7 +3390,11 @@ function calcProducaoDrink(drinkName, litrosNecessarios) {
   }
   walk(recipe.ingredientes, scale);
 
-  return { recipeName: recipe.nome, targetMl, preps, raw };
+  // Quantos drinks essa produção rende
+  const mlPorDrink = recipe.mlPorDrink || 200;
+  const drinksRendidos = Math.floor(targetMl / mlPorDrink);
+
+  return { recipeName: recipe.nome, targetMl, preps, raw, mlPorDrink, drinksRendidos };
 }
 
 /* ── DRINKS RTD ── */
@@ -3325,20 +3411,40 @@ function renderRtd(ev) {
   }
 
   let totalLitros = 0;
+  let totalDrinks = 0;
   const comprasConsolidadas = {}; // key "nome|un" -> qtd total do evento
 
   let html = drinks.map(function(drink) {
-    const cfg = config[drink]||{mlPorPessoa:200, seguranca:15};
-    const mlTotal   = pessoas * cfg.mlPorPessoa;
-    const litrosBruto = mlTotal / 1000;
-    const litros    = Math.ceil(litrosBruto * (1 + cfg.seguranca/100) * 10) / 10;
+    const recipe = findRecipe(drink);
+    const mlCopo = recipe ? (recipe.mlPorDrink||200) : 200;
+    // Novo modelo: drinksPorPessoa × volume do copo = volume a produzir
+    const cfg = config[drink]||{drinksPorPessoa:1.5, seguranca:15};
+    // Compatibilidade: se ainda tiver formato antigo (mlPorPessoa), converter
+    if(cfg.drinksPorPessoa === undefined && cfg.mlPorPessoa !== undefined) {
+      cfg.drinksPorPessoa = Math.round((cfg.mlPorPessoa / mlCopo) * 10) / 10;
+    }
+    if(cfg.drinksPorPessoa === undefined) cfg.drinksPorPessoa = 1.5;
+
+    const drinksAlvo = Math.ceil(pessoas * cfg.drinksPorPessoa);
+    const mlBruto = drinksAlvo * mlCopo;
+    const litrosBruto = mlBruto / 1000;
+    const litros = Math.ceil(litrosBruto * (1 + cfg.seguranca/100) * 10) / 10;
     totalLitros += litros;
 
     let prodHtml = '';
+    let metricsHtml = '';
     const calc = calcProducaoDrink(drink, litros);
 
     if(calc) {
-      // Acumular na lista de compras consolidada do evento
+      totalDrinks += calc.drinksRendidos;
+
+      const drinksPorPessoaReal = pessoas>0 ? (calc.drinksRendidos/pessoas) : 0;
+      metricsHtml = '<div class="rtd-drinks-info">' +
+        '<div class="rtd-metric"><div class="rtd-metric-val">'+calc.drinksRendidos+'</div><div class="rtd-metric-label">drinks rendidos</div></div>' +
+        '<div class="rtd-metric teal"><div class="rtd-metric-val">'+drinksPorPessoaReal.toFixed(1)+'</div><div class="rtd-metric-label">por pessoa (real)</div></div>' +
+        '<div class="rtd-metric teal"><div class="rtd-metric-val">'+mlCopo+'<span style="font-size:11px;">mL</span></div><div class="rtd-metric-label">copo deste drink</div></div>' +
+        '</div>';
+
       Object.keys(calc.raw).forEach(function(key) {
         comprasConsolidadas[key] = (comprasConsolidadas[key]||0) + calc.raw[key];
       });
@@ -3366,33 +3472,42 @@ function renderRtd(ev) {
 
     return '<div class="rtd-card">' +
       '<div class="rtd-drink-name">🍹 '+drink+'</div>' +
-      '<div class="rtd-row"><span class="rtd-label">Consumo estimado ('+pessoas+' pessoas × '+cfg.mlPorPessoa+'mL)</span><span class="rtd-val">'+mlTotal+' mL = '+litrosBruto.toFixed(1)+' L</span></div>' +
+      '<div class="rtd-row"><span class="rtd-label">Meta: '+pessoas+' pessoas × '+cfg.drinksPorPessoa+' drink(s) × '+mlCopo+'mL/copo</span><span class="rtd-val">'+drinksAlvo+' copos = '+litrosBruto.toFixed(1)+' L</span></div>' +
       '<div class="rtd-row"><span class="rtd-label">Com margem de segurança ('+cfg.seguranca+'%)</span><span class="rtd-val highlight">'+litros.toFixed(1)+' litros</span></div>' +
-      '<div class="rtd-input-row"><label>mL por pessoa:</label>' +
-      '<input type="number" min="10" step="10" value="'+cfg.mlPorPessoa+'" onchange="updateRtdConfig(\''+drink+'\',\'mlPorPessoa\',this.value)">' +
+      metricsHtml +
+      '<div class="rtd-input-row"><label>Drinks/pessoa:</label>' +
+      '<input type="number" min="0.1" step="0.1" value="'+cfg.drinksPorPessoa+'" onchange="updateRtdConfig(\''+drink+'\',\'drinksPorPessoa\',this.value)">' +
       '<label style="margin-left:8px;">Margem %:</label>' +
       '<input type="number" min="0" max="100" value="'+cfg.seguranca+'" onchange="updateRtdConfig(\''+drink+'\',\'seguranca\',this.value)"></div>' +
       prodHtml +
       '</div>';
   }).join('');
 
-  // Lista de compras consolidada do evento inteiro
-  const comprasKeys = Object.keys(comprasConsolidadas);
-  if(comprasKeys.length) {
-    const comprasOrdenadas = comprasKeys.sort(function(a,b){
-      return a.split('|')[0].localeCompare(b.split('|')[0]);
-    });
-    html += '<div class="compras-card">' +
-      '<div class="compras-title">🛒 Lista de Compras Consolidada</div>' +
-      '<div class="compras-sub">Quantidade total de ingredientes brutos para produzir todos os drinks deste evento</div>' +
-      '<div class="compras-list">' +
-      comprasOrdenadas.map(function(key) {
-        const parts = key.split('|');
-        const nome = parts[0]; const un = parts[1];
-        return '<div class="compras-row"><span class="compras-nome">'+nome+'</span><span class="compras-qtd">'+fmtQtd(comprasConsolidadas[key],un)+'</span></div>';
-      }).join('') +
-      '</div>' +
-      '<button class="btn-copy-compras" onclick="copiarListaCompras(\''+ev.id+'\')">📋 Copiar lista para enviar à equipe</button>' +
+  // Resumo geral de drinks do evento
+  if(totalDrinks > 0 && pessoas > 0) {
+    const drinksPorPessoaTotal = totalDrinks / pessoas;
+    let avaliacao = '';
+    if(drinksPorPessoaTotal < 2) {
+      avaliacao = '<div class="rtd-resumo-destaque">⚠️ <strong>'+drinksPorPessoaTotal.toFixed(1)+' drinks/pessoa</strong> — pode ser pouco para um evento. O padrão de mercado costuma ser de 3 a 5 drinks por pessoa. Considere aumentar a produção.</div>';
+    } else if(drinksPorPessoaTotal <= 5) {
+      avaliacao = '<div class="rtd-resumo-destaque">✅ <strong>'+drinksPorPessoaTotal.toFixed(1)+' drinks/pessoa</strong> — quantidade ideal! Está dentro da faixa recomendada (3 a 5 por pessoa).</div>';
+    } else {
+      avaliacao = '<div class="rtd-resumo-destaque">📊 <strong>'+drinksPorPessoaTotal.toFixed(1)+' drinks/pessoa</strong> — produção generosa. Se quiser reduzir custos e perdas, pode diminuir um pouco os mL por pessoa de cada drink.</div>';
+    }
+    html += '<div class="rtd-resumo-box">' +
+      '<div class="rtd-resumo-title">📈 Resumo de Produção do Evento</div>' +
+      '<div class="rtd-resumo-row"><span class="rtd-resumo-label">Total de drinks a produzir</span><span class="rtd-resumo-val" style="color:var(--green);font-size:15px;">'+totalDrinks+' drinks</span></div>' +
+      '<div class="rtd-resumo-row"><span class="rtd-resumo-label">Convidados</span><span class="rtd-resumo-val">'+pessoas+' pessoas</span></div>' +
+      '<div class="rtd-resumo-row"><span class="rtd-resumo-label">Média de drinks por pessoa</span><span class="rtd-resumo-val" style="color:var(--teal);font-size:15px;">'+drinksPorPessoaTotal.toFixed(1)+' drinks</span></div>' +
+      '<div class="rtd-resumo-row"><span class="rtd-resumo-label">Volume total a produzir</span><span class="rtd-resumo-val">'+totalLitros.toFixed(1)+' litros</span></div>' +
+      avaliacao +
+      '</div>';
+  }
+
+  // Dica para ver a lista de compras na aba dedicada
+  if(Object.keys(comprasConsolidadas).length) {
+    html += '<div style="text-align:center;margin-top:14px;padding:12px;background:rgba(42,143,163,0.07);border:1px solid rgba(42,143,163,0.15);border-radius:var(--radius-sm);font-size:12px;color:var(--text2);">' +
+      '🛒 A lista de compras completa deste evento está na aba <strong style="color:var(--teal);">Lista de Compras</strong>.' +
       '</div>';
   }
 
@@ -3400,25 +3515,170 @@ function renderRtd(ev) {
 
   document.getElementById('rtd-total-box').style.display = 'block';
   document.getElementById('rtd-total-val').textContent = totalLitros.toFixed(1) + ' L total';
+}
 
-  // Guardar para a função de copiar
-  window._comprasConsolidadasAtual = comprasConsolidadas;
+/* ── Calcular lista de compras consolidada do evento ── */
+function calcularListaComprasEvento(ev) {
+  const drinks = (ev.drinks||'').split(',').map(function(d){ return d.trim(); }).filter(Boolean);
+  const config = ev.rtdConfig||{};
+  const pessoas = ev.pessoas||0;
+  const compras = {};   // ingredientes brutos
+  const preparos = {};  // preparos intermediários
+  let semFicha = [];
+
+  drinks.forEach(function(drink) {
+    const recipe = findRecipe(drink);
+    if(!recipe) { semFicha.push(drink); return; }
+    const mlCopo = recipe.mlPorDrink||200;
+    const cfg = config[drink]||{drinksPorPessoa:1.5, seguranca:15};
+    let dpp = cfg.drinksPorPessoa;
+    if(dpp === undefined && cfg.mlPorPessoa !== undefined) dpp = Math.round((cfg.mlPorPessoa/mlCopo)*10)/10;
+    if(dpp === undefined) dpp = 1.5;
+    const seg = cfg.seguranca!==undefined ? cfg.seguranca : 15;
+
+    const drinksAlvo = Math.ceil(pessoas * dpp);
+    const mlBruto = drinksAlvo * mlCopo;
+    const litros = Math.ceil((mlBruto/1000) * (1 + seg/100) * 10) / 10;
+
+    const calc = calcProducaoDrink(drink, litros);
+    if(calc) {
+      Object.keys(calc.raw).forEach(function(key) {
+        compras[key] = (compras[key]||0) + calc.raw[key];
+      });
+      calc.preps.forEach(function(p) {
+        const k = p.nome+'|'+p.un;
+        preparos[k] = (preparos[k]||0) + p.qtd;
+      });
+    }
+  });
+
+  return { compras, preparos, semFicha };
+}
+
+/* ── Renderizar painel dedicado de lista de compras ── */
+function renderListaCompras(ev) {
+  const container = document.getElementById('compras-list-panel');
+  const drinks = (ev.drinks||'').split(',').map(function(d){ return d.trim(); }).filter(Boolean);
+
+  if(!drinks.length) {
+    container.innerHTML = '<div class="lc-empty"><div class="lc-empty-icon">🛒</div>Nenhum drink cadastrado no evento.<br>Edite o evento e adicione os drinks para gerar a lista de compras automaticamente.</div>';
+    return;
+  }
+
+  const dados = calcularListaComprasEvento(ev);
+  const comprasKeys = Object.keys(dados.compras).sort(function(a,b){ return a.split('|')[0].localeCompare(b.split('|')[0]); });
+  const preparosKeys = Object.keys(dados.preparos).sort(function(a,b){ return a.split('|')[0].localeCompare(b.split('|')[0]); });
+
+  if(!comprasKeys.length && !preparosKeys.length) {
+    container.innerHTML = '<div class="lc-empty"><div class="lc-empty-icon">⚠️</div>Os drinks deste evento não têm ficha técnica cadastrada.<br>Não foi possível gerar a lista de compras automática.</div>';
+    return;
+  }
+
+  // Estado de "comprado" guardado no evento
+  if(!ev.comprasMarcadas) ev.comprasMarcadas = {};
+
+  const totalItens = comprasKeys.length;
+  const comprados = comprasKeys.filter(function(k){ return ev.comprasMarcadas[k]; }).length;
+  const pct = totalItens>0 ? Math.round(comprados/totalItens*100) : 0;
+
+  let html = '';
+
+  // Botões de ação
+  html += '<div class="lc-header-actions">';
+  html += '<button class="btn-lc-action" onclick="copiarListaCompras(\''+ev.id+'\')">📋 Copiar lista</button>';
+  html += '<button class="btn-lc-action ghost" onclick="limparMarcacoesCompras(\''+ev.id+'\')">↺ Desmarcar tudo</button>';
+  html += '</div>';
+
+  // Progresso de compra
+  html += '<div class="lc-progress"><div class="lc-progress-bar"><div class="lc-progress-fill" style="width:'+pct+'%"></div></div>';
+  html += '<span class="lc-progress-txt">'+comprados+'/'+totalItens+' comprados</span></div>';
+
+  // Ingredientes a comprar
+  if(comprasKeys.length) {
+    html += '<div class="lc-section">';
+    html += '<div class="lc-section-title">🧂 Ingredientes a comprar</div>';
+    comprasKeys.forEach(function(key) {
+      const parts = key.split('|');
+      const nome = parts[0]; const un = parts[1];
+      const marcado = ev.comprasMarcadas[key];
+      html += '<div class="lc-item'+(marcado?' comprado':'')+'">';
+      html += '<div class="lc-check" onclick="toggleCompraItem(\''+ev.id+'\',\''+key.replace(/'/g,"")+'\')">'+(marcado?'✓':'')+'</div>';
+      html += '<span class="lc-nome">'+nome+'</span>';
+      html += '<span class="lc-qtd">'+fmtQtd(dados.compras[key],un)+'</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Preparos a produzir (informativo)
+  if(preparosKeys.length) {
+    html += '<div class="lc-section">';
+    html += '<div class="lc-section-title">⚗️ Preparos a produzir (intermediários)</div>';
+    preparosKeys.forEach(function(key) {
+      const parts = key.split('|');
+      const nome = parts[0]; const un = parts[1];
+      html += '<div class="lc-item">';
+      html += '<span style="width:20px;text-align:center;flex-shrink:0;">⚗️</span>';
+      html += '<span class="lc-nome">'+nome+'</span>';
+      html += '<span class="lc-qtd" style="color:var(--teal);">'+fmtQtd(dados.preparos[key],un)+'</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Avisar drinks sem ficha
+  if(dados.semFicha.length) {
+    html += '<div class="prod-no-recipe">⚠ Sem ficha técnica: '+dados.semFicha.join(', ')+'. Esses drinks não entram no cálculo.</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function toggleCompraItem(evId, key) {
+  const ev = eventos.find(function(e){ return e.id===evId; });
+  if(!ev) return;
+  if(!ev.comprasMarcadas) ev.comprasMarcadas = {};
+  ev.comprasMarcadas[key] = !ev.comprasMarcadas[key];
+  saveDrawerData(ev);
+  renderListaCompras(ev);
+}
+
+function limparMarcacoesCompras(evId) {
+  const ev = eventos.find(function(e){ return e.id===evId; });
+  if(!ev) return;
+  ev.comprasMarcadas = {};
+  saveDrawerData(ev);
+  renderListaCompras(ev);
 }
 
 function copiarListaCompras(evId) {
   const ev = eventos.find(function(e){ return e.id===evId; });
-  const compras = window._comprasConsolidadasAtual || {};
-  const keys = Object.keys(compras).sort(function(a,b){ return a.split('|')[0].localeCompare(b.split('|')[0]); });
-  let texto = 'LISTA DE PRODUÇÃO — ' + (ev?ev.nome:'Evento') + '\n';
-  texto += (ev&&ev.data ? fmtDate(ev.data) : '') + '\n';
+  if(!ev) return;
+  const dados = calcularListaComprasEvento(ev);
+  const comprasKeys = Object.keys(dados.compras).sort(function(a,b){ return a.split('|')[0].localeCompare(b.split('|')[0]); });
+  const preparosKeys = Object.keys(dados.preparos).sort(function(a,b){ return a.split('|')[0].localeCompare(b.split('|')[0]); });
+
+  let texto = '🛒 LISTA DE COMPRAS — ' + ev.nome + '\n';
+  texto += (ev.data ? '📅 ' + fmtDate(ev.data) : '');
+  texto += (ev.pessoas ? '  |  👥 ' + ev.pessoas + ' pessoas' : '') + '\n';
   texto += '========================================\n\n';
-  texto += 'INGREDIENTES NECESSÁRIOS:\n\n';
-  keys.forEach(function(key) {
+
+  texto += '🧂 INGREDIENTES A COMPRAR:\n';
+  comprasKeys.forEach(function(key) {
     const parts = key.split('|');
-    texto += '• ' + parts[0] + ': ' + fmtQtd(compras[key], parts[1]) + '\n';
+    texto += '• ' + parts[0] + ': ' + fmtQtd(dados.compras[key], parts[1]) + '\n';
   });
+
+  if(preparosKeys.length) {
+    texto += '\n⚗️ PREPAROS A PRODUZIR:\n';
+    preparosKeys.forEach(function(key) {
+      const parts = key.split('|');
+      texto += '• ' + parts[0] + ': ' + fmtQtd(dados.preparos[key], parts[1]) + '\n';
+    });
+  }
+
   texto += '\n========================================\n';
-  texto += 'Gerado automaticamente — Aura Coquetelaria';
+  texto += 'Gerado automaticamente — Aura Coquetelaria 🍹';
 
   navigator.clipboard.writeText(texto).then(function() {
     showToast('Lista copiada! Cole no WhatsApp para enviar à equipe.','success');
@@ -3430,7 +3690,7 @@ function copiarListaCompras(evId) {
 function updateRtdConfig(drink, campo, valor) {
   const ev = eventos.find(e=>e.id===drawerEvId);
   if(!ev.rtdConfig) ev.rtdConfig={};
-  if(!ev.rtdConfig[drink]) ev.rtdConfig[drink]={mlPorPessoa:200, seguranca:15};
+  if(!ev.rtdConfig[drink]) ev.rtdConfig[drink]={drinksPorPessoa:1.5, seguranca:15};
   ev.rtdConfig[drink][campo] = parseFloat(valor)||0;
   saveDrawerData(ev);
   renderRtd(ev);
