@@ -2720,7 +2720,7 @@ async function saveEvento() {
 
   try {
     if(editingId) {
-      if(fbReady) await window._setDoc(window._doc(window._db, colEventos, editingId), item);
+      if(fbReady) await window._setDoc(window._doc(window._db, colEventos, editingId), item, { merge: true });
       item.id = editingId;
       const idx = eventos.findIndex(e=>e.id===editingId);
       if(idx>-1) eventos[idx] = item;
