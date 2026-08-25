@@ -1,0 +1,18 @@
+# Backups do Firestore — contêm dados financeiros reais. Nunca versionar.
+_backup/
+
+# Diretório de trabalho temporário
+scratchpad/
+
+# Dependências
+node_modules/
+
+# Segredos e configuração de ambiente
+.env*
+!.env.example
+
+# Documentos de trabalho — não fazem parte do produto
+ESTADO-aura-coquetelaria.md
+Playbook_Metodo.md
+Guia_Bolso_ClaudeCode.md
+files.zip
