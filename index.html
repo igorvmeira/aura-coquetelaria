@@ -11,6 +11,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   // =============================================
   // 🔥 COLE AQUI SUAS CREDENCIAIS DO FIREBASE
@@ -40,9 +41,86 @@
   window._orderBy = orderBy;
   window._setDoc = setDoc;
   window._collection = collection;
-  window._firebaseReady = true;
+  const auth = getAuth(app);
+  window._auth = auth;
 
-  window.dispatchEvent(new Event("firebaseReady"));
+  /* ══════════════════════════════════════════════════════════════════
+     PORTA DE LOGIN
+
+     O evento "firebaseReady" NÃO é mais disparado na carga da página:
+     ele espera haver usuário autenticado. Todo o resto do arquivo já
+     age atrás da variável fbReady, então nenhuma das 15 chamadas de
+     gravação precisou mudar.
+     ══════════════════════════════════════════════════════════════════ */
+
+  function mostrarLogin(mostrar) {
+    const tela = document.getElementById('tela-login');
+    if (tela) tela.style.display = mostrar ? 'flex' : 'none';
+  }
+
+  function mensagemDeErro(codigo) {
+    switch (codigo) {
+      case 'auth/invalid-email':          return 'E-mail inválido.';
+      case 'auth/missing-password':       return 'Digite a senha.';
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found':         return 'E-mail ou senha incorretos.';
+      case 'auth/user-disabled':          return 'Este usuário está desativado. Fale com o administrador.';
+      case 'auth/too-many-requests':      return 'Muitas tentativas seguidas. Aguarde alguns minutos.';
+      case 'auth/network-request-failed': return 'Sem conexão com o servidor de login.';
+      case 'auth/unauthorized-domain':    return 'Este endereço não está autorizado no Firebase. Adicione o domínio em Authentication > Settings > Domínios autorizados.';
+      default:                            return 'Não foi possível entrar. Tente novamente.';
+    }
+  }
+
+  window._entrar = async function () {
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+    const btn   = document.getElementById('login-btn');
+    const erro  = document.getElementById('login-erro');
+
+    erro.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+    } catch (e) {
+      erro.textContent = mensagemDeErro(e && e.code);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  };
+
+  window._sair = function () {
+    signOut(auth).then(function () { location.reload(); });
+  };
+
+  // Dispara UMA vez só. onAuthStateChanged também roda na renovação do
+  // token, e disparar de novo recarregaria a coleção inteira à toa.
+  let jaIniciou = false;
+
+  onAuthStateChanged(auth, function (usuario) {
+    const btnSair = document.getElementById('btn-sair');
+    const alvo    = document.getElementById('usuario-email');
+
+    if (usuario) {
+      mostrarLogin(false);
+      if (alvo) alvo.textContent = usuario.email || '';
+      if (btnSair) btnSair.style.display = '';
+
+      if (!jaIniciou) {
+        jaIniciou = true;
+        window._firebaseReady = true;
+        window.dispatchEvent(new Event("firebaseReady"));
+      }
+    } else {
+      mostrarLogin(true);
+      if (alvo) alvo.textContent = '';
+      if (btnSair) btnSair.style.display = 'none';
+    }
+  });
 </script>
 
 <style>
@@ -1040,6 +1118,39 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 </head>
 <body>
 
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
+<style>
+#tela-login{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;}
+#tela-login .caixa{width:100%;max-width:360px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:26px;}
+#tela-login h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--text);margin-bottom:2px;}
+#tela-login h2 span{color:var(--teal);}
+#tela-login .sub{font-size:13px;color:var(--text2);margin-bottom:20px;}
+#tela-login label{display:block;font-size:12px;color:var(--text2);margin:0 0 4px;}
+#tela-login input{width:100%;padding:10px 12px;margin-bottom:12px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+#tela-login input:focus{border-color:var(--teal);}
+#tela-login button{width:100%;padding:11px;background:var(--teal);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+#tela-login button:hover{background:var(--teal-dark);}
+#tela-login button:disabled{opacity:.6;cursor:default;}
+#login-erro{min-height:18px;margin-top:10px;font-size:13px;color:#f0895c;}
+#login-rodape{margin-top:14px;font-size:11px;color:var(--text3);text-align:center;}
+</style>
+
+<div id="tela-login">
+  <div class="caixa">
+    <h2><span>Aura</span> Coquetelaria</h2>
+    <div class="sub">Acesso restrito à equipe.</div>
+    <form onsubmit="_entrar(); return false;">
+      <label for="login-email">E-mail</label>
+      <input id="login-email" type="email" autocomplete="username" required autofocus>
+      <label for="login-senha">Senha</label>
+      <input id="login-senha" type="password" autocomplete="current-password" required>
+      <button id="login-btn" type="submit">Entrar</button>
+    </form>
+    <div id="login-erro" role="alert"></div>
+    <div id="login-rodape">Precisa de acesso? Peça ao administrador.</div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="header">
   <a class="logo" href="#">
@@ -1058,6 +1169,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       <span class="save-dot"></span>
       <span id="save-text">Conectando...</span>
     </div>
+    <span id="usuario-email" style="font-size:12px;color:var(--text2);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <button class="btn" id="btn-sair" style="display:none" onclick="_sair()">Sair</button>
     <button class="btn-primary btn" id="btn-novo" onclick="openModal()">+ Novo Lançamento</button>
   </div>
 </header>
@@ -1763,7 +1876,11 @@ window.addEventListener('firebaseReady', async () => {
   await loadEventos();       // carrega eventos
   await loadFromFirebase(); // depois renderiza dashboard (já com pendências disponíveis)
 });
-setTimeout(()=>{ if(!fbReady) loadFallback(); }, 3000);
+/* O temporizador de 3 segundos foi REMOVIDO.
+   Ele chamava loadFallback() quando o Firebase demorava — e agora demora
+   sempre, porque espera alguém digitar a senha. Com o loadFallback antigo,
+   isso encheria a tela de dados de exemplo por baixo do login.
+   Sem conexão, quem avisa é o catch de loadFromFirebase. */
 
 async function loadFromFirebase() {
   try {
@@ -1782,27 +1899,53 @@ async function loadFromFirebase() {
     }
   } catch(e) {
     console.error(e);
-    showToast('Erro Firebase — usando dados locais', 'error');
-    loadFallback();
+    showToast('Não foi possível carregar os dados.', 'error');
+    loadFallback(e && e.code ? e.code : 'falha na leitura');
   }
 }
 
 async function seedFirebase() {
-  showToast('Importando dados históricos...', 'success');
-  for(const item of SEED_DATA) {
-    await window._addDoc(window._colRef, item);
-  }
-  await loadFromFirebase();
+  /* NÃO grava mais nada automaticamente.
+
+     Antes, uma leitura que voltasse VAZIA fazia este painel escrever todo
+     o SEED_DATA na coleção financeira de produção. Coleção vazia é sinal
+     de problema — regra do Firestore, rede, projeto errado — e não convite
+     para popular com exemplos. */
+
+  console.warn('Coleção de lançamentos vazia. A carga automática de exemplos foi desativada de propósito.');
+  loadFallback('a coleção voltou vazia');
 }
 
-function loadFallback() {
-  allData = SEED_DATA.map((d,i)=>({...d, id:'local-'+i}));
-  allData.sort((a,b)=>b.data.localeCompare(a.data));
-  filteredData = [...allData];
-  renderAll(filteredData);
-  document.getElementById('save-text').textContent = 'Modo offline';
-  document.getElementById('status-msg').innerHTML =
-    '<span style="color:var(--gold)">⚠ Configure o Firebase para sincronização em tempo real</span>';
+function loadFallback(motivo) {
+  /* NUNCA mostrar SEED_DATA aqui.
+
+     Este painel é financeiro. Um número de exemplo na tela é pior que a
+     tela vazia: alguém decide em cima dele achando que é o caixa da casa.
+     Antes, qualquer leitura lenta ou falha enchia o dashboard de dezenas
+     de lançamentos inventados, rotulados apenas como "Modo offline". */
+
+  allData = [];
+  filteredData = [];
+
+  const main = document.querySelector('.main');
+  if (main) main.style.display = 'none';
+
+  let aviso = document.getElementById('aviso-indisponivel');
+  if (!aviso) {
+    aviso = document.createElement('div');
+    aviso.id = 'aviso-indisponivel';
+    aviso.style.cssText = 'max-width:720px;margin:48px auto;padding:22px;border:1px solid rgba(216,90,48,0.4);background:rgba(216,90,48,0.1);border-radius:12px;color:#f0895c;font-size:14px;line-height:1.6;';
+    document.body.appendChild(aviso);
+  }
+
+  aviso.innerHTML =
+    '<strong>Dados indisponíveis</strong><br>' +
+    'Não foi possível carregar os lançamentos' + (motivo ? ' (' + motivo + ')' : '') + '.<br>' +
+    'Nenhum número está sendo exibido — preferimos a tela vazia a mostrar ' +
+    'informação que pode estar errada.<br>Recarregue a página para tentar de novo.';
+
+  const st = document.getElementById('save-text');
+  if (st) st.textContent = 'Dados indisponíveis';
 }
 
 /* ── RENDER KPIs ── */
